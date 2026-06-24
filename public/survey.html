@@ -3,747 +3,223 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Dashboard — Qidalanma Monitorinqi</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<title>Valideyn Sorğusu</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --green:#1F3D33;--green-mid:#2d5a45;--green-light:#5A8A6B;
-  --accent:#E8743B;--bg:#f0f4f0;--card:#fff;
-  --text:#1a2e26;--muted:#6b7e73;--border:#dde8e0;
-  --ok:#2d7a3d;--ok-bg:#e6f4ea;
-  --warn:#a05e00;--warn-bg:#fff7e6;
-  --alarm:#B23A33;--alarm-bg:#fdecea;
-}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+body{font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(160deg,#0d2b20 0%,#1a4a32 50%,#0f3d2a 100%);
+  min-height:100vh;padding:28px 16px;display:flex;align-items:flex-start;justify-content:center}
+.wrap{width:100%;max-width:480px}
+.card{background:#fdfaf4;border-radius:20px;padding:36px 32px;
+  box-shadow:0 12px 48px rgba(0,0,0,.3);margin-bottom:16px}
+.card-header{text-align:center;margin-bottom:24px}
+.icon-wrap{width:52px;height:52px;background:#e8f5ee;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.5rem}
+.card-header h1{color:#0f2e1e;font-size:1.35rem;font-weight:700;line-height:1.35;font-family:Georgia,serif}
+.card-header p{color:#5a7a65;font-size:.88rem;margin-top:6px}
 
-/* NAV */
-nav{background:var(--green);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.brand{color:#FAF6EF;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
-.brand span{opacity:.55;font-weight:400;font-size:.85rem}
-.nav-actions{display:flex;gap:10px;align-items:center}
-.nav-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#FAF6EF;
-  padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:500;transition:.15s}
-.nav-btn:hover{background:rgba(255,255,255,.22)}
-.nav-btn.active{background:rgba(255,255,255,.22)}
+#video-section{padding:0;overflow:hidden;border-radius:14px;position:relative;cursor:pointer;margin-bottom:24px}
+#video-section video{width:100%;display:block;max-height:280px;object-fit:cover}
+.play-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:rgba(0,0,0,.35);transition:.2s}
+.play-overlay .play-btn{width:56px;height:56px;background:rgba(255,255,255,.9);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:8px}
+.play-overlay p{color:#fff;font-size:.88rem;font-weight:600}
+.video-playing .play-overlay{opacity:0;pointer-events:none}
+.skip-btn{position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,.55);color:#fff;
+  border:none;padding:6px 13px;border-radius:8px;font-size:.78rem;cursor:pointer;display:none}
+.video-playing .skip-btn{display:block}
 
-/* TABS */
-.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 28px}
-.tab{padding:14px 20px;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--muted);
-  border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s}
-.tab:hover{color:var(--green)}
-.tab.active{color:var(--green);border-color:var(--green)}
+.pin-label{font-size:.78rem;font-weight:700;color:#3a6b4a;text-transform:uppercase;
+  letter-spacing:.06em;display:block;margin-bottom:8px}
+.pin-input{width:100%;padding:13px;border:2px solid #c8ddd0;border-radius:11px;
+  font-size:1.3rem;letter-spacing:.22em;text-align:center;outline:none;
+  background:#fff;color:#0f2e1e;font-family:monospace;transition:.2s}
+.pin-input:focus{border-color:#1a5c38}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:.97rem;
+  font-weight:700;cursor:pointer;margin-top:12px;transition:.2s;
+  background:#1a5c38;color:#e8f5ee;letter-spacing:.02em}
+.btn:hover{background:#0f3d26}
+.btn:disabled{background:#7aab8a;cursor:not-allowed}
+.error{color:#B23A33;font-size:.85rem;margin-top:8px;text-align:center}
 
-/* MAIN */
-main{max-width:1200px;margin:0 auto;padding:24px 20px}
-.tab-pane{display:none}
-.tab-pane.active{display:block}
+#survey-section{display:none}
+.kg-name{color:#0f2e1e;font-weight:700;font-size:.95rem;margin-bottom:22px;
+  padding:10px 14px;background:#e4f2ea;border-radius:9px;text-align:center;
+  border-left:4px solid #1a5c38}
+.question{margin-bottom:22px}
+.question label{display:block;color:#1a3d2b;font-weight:600;margin-bottom:10px;font-size:.93rem}
+.options{display:flex;gap:8px}
+.opt{flex:1;border:2px solid #c8ddd0;border-radius:10px;padding:11px 5px;
+  text-align:center;cursor:pointer;transition:.2s;font-size:.8rem;color:#4a7a5a;
+  background:#f5fbf7;user-select:none}
+.opt:hover{border-color:#4a9e6a;background:#edf8f1}
+.opt.selected{border-color:#1a5c38;background:#1a5c38;color:#e8f5ee}
+.opt .score{display:block;font-size:1.4rem;margin-bottom:4px}
+textarea{width:100%;border:2px solid #c8ddd0;border-radius:10px;padding:12px;
+  font-size:.9rem;font-family:inherit;resize:vertical;min-height:90px;outline:none;
+  background:#fff;color:#0f2e1e}
+textarea:focus{border-color:#1a5c38}
 
-/* KPI CARDS */
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
-.kpi{background:var(--card);border-radius:14px;padding:20px 18px;box-shadow:0 1px 6px rgba(0,0,0,.06);position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--green-light)}
-.kpi .num{font-size:2rem;font-weight:800;color:var(--green);line-height:1}
-.kpi .lbl{color:var(--muted);font-size:.8rem;margin-top:6px;font-weight:500}
-.kpi .sub{font-size:.78rem;color:var(--green-light);margin-top:2px;font-weight:600}
-
-/* SECTION HEADER */
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;margin-top:8px}
-.sec-head h2{font-size:1rem;font-weight:700;color:var(--green)}
-.sec-head .right{display:flex;gap:8px}
-
-/* CHARTS ROW */
-.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-@media(max-width:720px){.charts-row{grid-template-columns:1fr}}
-.chart-card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
-.chart-card h3{font-size:.88rem;font-weight:700;color:var(--green);margin-bottom:14px}
-.chart-wrap{position:relative;height:220px}
-
-/* TABLE */
-.card{background:var(--card);border-radius:14px;padding:0;box-shadow:0 1px 6px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px}
-.card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-head h3{font-size:.9rem;font-weight:700;color:var(--green)}
-table{width:100%;border-collapse:collapse;font-size:.84rem}
-th{background:#f5f8f5;color:var(--green);padding:10px 14px;text-align:left;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
-td{padding:11px 14px;border-bottom:1px solid #f0f4f0;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:#fafcfa}
-
-/* STATUS BADGE */
-.badge{padding:4px 10px;border-radius:20px;font-size:.76rem;font-weight:700;display:inline-block;white-space:nowrap}
-.badge-ok{background:var(--ok-bg);color:var(--ok)}
-.badge-warn{background:var(--warn-bg);color:var(--warn)}
-.badge-alarm{background:var(--alarm-bg);color:var(--alarm)}
-.badge-nd{background:#f0f0f0;color:#888}
-
-/* SCORE */
-.score-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.bar{width:40px;height:5px;background:#e8ece8;border-radius:3px;overflow:hidden;flex-shrink:0}
-.bar-fill{height:100%;border-radius:3px}
-
-/* TARGET */
-.target-cell{display:flex;align-items:center;gap:6px}
-.target-badge{font-size:.75rem;padding:2px 8px;border-radius:10px;font-weight:700}
-.above{background:#e6f4ea;color:#2d7a3d}
-.below{background:#fdecea;color:#B23A33}
-
-/* BUTTONS */
-.btn{padding:8px 16px;border-radius:9px;font-size:.83rem;font-weight:600;cursor:pointer;border:none;transition:.15s}
-.btn-primary{background:var(--green);color:#fff}
-.btn-primary:hover{background:var(--green-mid)}
-.btn-outline{background:transparent;border:2px solid var(--green);color:var(--green)}
-.btn-outline:hover{background:#e8f0ec}
-.btn-danger{background:transparent;border:2px solid #e53935;color:#e53935}
-.btn-danger:hover{background:#fdecea}
-.btn-sm{padding:5px 11px;font-size:.78rem}
-.btn-icon{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:.9rem;cursor:pointer;border:none;transition:.15s}
-.btn-edit{background:#e8f4f0;color:var(--green)}
-.btn-edit:hover{background:#d0e8dc}
-.btn-del{background:#fdecea;color:#B23A33}
-.btn-del:hover{background:#fbd5d4}
-
-/* FORM */
-.form-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:16px}
-@media(max-width:600px){.form-row{grid-template-columns:1fr 1fr}}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:.78rem;font-weight:600;color:var(--muted)}
-.field input,.field select{padding:9px 12px;border:2px solid var(--border);border-radius:9px;
-  font-size:.88rem;outline:none;color:var(--text);background:#fff;transition:.15s}
-.field input:focus,.field select:focus{border-color:var(--green)}
-.field input.small{width:90px}
-
-/* PIN SECTION */
-.pin-results{max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;
-  padding:12px;font-family:monospace;font-size:.8rem;line-height:1.8;display:none;margin-top:14px}
-.pin-results a{color:var(--green);text-decoration:none}
-.pin-results a:hover{text-decoration:underline}
-
-/* COMMENTS */
-.comment-item{border-left:4px solid var(--accent);padding:10px 14px;margin-bottom:10px;
-  background:#fffaf5;border-radius:0 10px 10px 0}
-.comment-meta{font-size:.76rem;color:var(--muted);margin-bottom:4px}
-.comment-text{font-size:.88rem;color:var(--text)}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;
-  display:none;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:#fff;border-radius:18px;padding:28px;width:420px;max-width:95vw;
-  box-shadow:0 8px 40px rgba(0,0,0,.18)}
-.modal h3{font-size:1rem;font-weight:700;color:var(--green);margin-bottom:20px}
-.modal .field{margin-bottom:14px}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
-
-/* LOADING / EMPTY */
-.loading{text-align:center;padding:48px;color:var(--muted)}
-.empty{text-align:center;padding:32px;color:#aaa;font-size:.88rem}
-
-/* TREND badge */
-.trend-up{color:var(--ok);font-size:.75rem;font-weight:700}
-.trend-dn{color:var(--alarm);font-size:.75rem;font-weight:700}
-
-/* ── RESPONSIVE ── */
-
-/* Tablet: 768px */
-@media(max-width:768px){
-  nav{padding:0 16px;height:52px}
-  .brand span{display:none}
-  .nav-btn{padding:6px 10px;font-size:.78rem}
-  .tabs{padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab{padding:12px 14px;font-size:.82rem}
-  main{padding:16px 12px}
-  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-  .charts-row{grid-template-columns:1fr}
-  .form-row{grid-template-columns:1fr 1fr}
-  .modal{width:95vw;padding:20px}
-}
-
-/* Mobile: 480px */
-@media(max-width:480px){
-  nav{padding:0 12px;height:48px}
-  .brand{font-size:.88rem}
-  .nav-actions{gap:6px}
-  .nav-btn{padding:5px 9px;font-size:.75rem}
-  .tabs{padding:0 8px}
-  .tab{padding:10px 11px;font-size:.8rem}
-  main{padding:12px 10px}
-
-  /* KPI 2 sütun */
-  .kpi-row{grid-template-columns:1fr 1fr;gap:8px}
-  .kpi{padding:14px 12px}
-  .kpi .num{font-size:1.6rem}
-
-  /* Cədvəllər scroll edilə bilər */
-  .card div[style*="overflow-x"]{-webkit-overflow-scrolling:touch}
-  table{font-size:.78rem}
-  th,td{padding:8px 10px}
-
-  /* Score cell sadələşdir */
-  .score-cell .bar{display:none}
-
-  /* Target badge kiçilt */
-  .target-badge{font-size:.68rem;padding:2px 6px}
-  .target-cell span[style]{display:none}
-
-  /* Sec-head */
-  .sec-head{flex-direction:column;align-items:flex-start;gap:8px}
-  .sec-head .right{width:100%}
-  .sec-head .right .btn{width:100%;justify-content:center}
-
-  /* Form rows tam sütun */
-  .form-row{grid-template-columns:1fr}
-  .form-row div[style*="display:flex"]{flex-direction:row;gap:8px}
-  .form-row div[style*="display:flex"] .btn{flex:1}
-
-  /* Card head */
-  .card-head{padding:12px 14px;flex-direction:column;align-items:flex-start;gap:8px}
-
-  /* Charts */
-  .chart-card{padding:14px}
-  .chart-wrap{height:180px}
-
-  /* PIN results */
-  .pin-results{font-size:.74rem}
-
-  /* Modal */
-  .modal{padding:18px 16px}
-  .modal-actions{flex-direction:column-reverse}
-  .modal-actions .btn{width:100%}
-
-  /* Sec head btn */
-  .sec-head + .card .btn,
-  button.btn.btn-primary[onclick="openAddModal()"]{width:100%}
-}
-
-/* Çox kiçik ekranlar: 360px */
-@media(max-width:360px){
-  .kpi-row{grid-template-columns:1fr}
-  .tab{padding:9px 9px;font-size:.76rem}
-}
+#success-section{display:none;text-align:center;padding:16px 0}
+#success-section .big{font-size:3.5rem;margin-bottom:14px}
+#success-section h2{color:#0f2e1e;font-family:Georgia,serif;margin-bottom:8px;font-size:1.3rem}
+#success-section p{color:#5a7a65;font-size:.9rem;line-height:1.6}
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-wrap">🥗</div>
+      <h1>Bağçada Qidalanma<br>Monitorinqi</h1>
+      <p>Rəyiniz uşaqlarımızın sağlamlığı üçün vacibdir</p>
+    </div>
 
-<nav>
-  <div class="brand">🌿 Qidalanma Monitorinqi <span>Admin Paneli</span></div>
-  <div class="nav-actions">
-    <button class="nav-btn" onclick="refreshAll()">🔄 Yenilə</button>
-    <button class="nav-btn" onclick="logout()">Çıxış</button>
+    <div id="video-section" onclick="startVideo()">
+      <video id="intro-video" playsinline preload="auto">
+        <source src="/survey-intro.mp4" type="video/mp4">
+      </video>
+      <div class="play-overlay">
+        <div class="play-btn">▶</div>
+        <p>Videoya baxın</p>
+      </div>
+      <button class="skip-btn" onclick="skipVideo(event)">Keç →</button>
+    </div>
+
+    <span class="pin-label">🔑 PIN kodunuzu daxil edin</span>
+    <input type="text" id="pin-input" class="pin-input" maxlength="6"
+           placeholder="_ _ _ _ _ _" inputmode="numeric" autocomplete="off">
+    <div class="error" id="pin-error"></div>
+    <button class="btn" id="pin-btn" onclick="verifyPin()">Daxil ol</button>
   </div>
-</nav>
 
-<div class="tabs">
-  <div class="tab active" onclick="showTab('overview')">📊 İcmal</div>
-  <div class="tab" onclick="showTab('kindergartens')">🏫 Bağçalar</div>
-  <div class="tab" onclick="showTab('pins')">🔑 PIN İdarəetməsi</div>
-  <div class="tab" onclick="showTab('comments')">💬 Şərhlər</div>
-</div>
-
-<main>
-  <div id="loading" class="loading">⏳ Məlumatlar yüklənir...</div>
-  <div id="content" style="display:none">
-
-    <!-- TAB: İCMAL -->
-    <div class="tab-pane active" id="tab-overview">
-
-      <div class="sec-head">
-        <h2>📊 Ümumi İcmal</h2>
-        <div class="right">
-          <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 Excel Endir</button>
-        </div>
-      </div>
-
-      <div class="kpi-row" id="kpi-row"></div>
-
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3>📈 Bağçalar üzrə Ortalama Bal</h3>
-          <div class="chart-wrap"><canvas id="chart-bar"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <h3>🕐 Son 7 Günün Trendi</h3>
-          <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-head">
-          <h3>🏫 Bağçalar üzrə Monitorinq</h3>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Bağçanın Adı</th>
-                <th>Region</th>
-                <th>İştirakçı</th>
-                <th>Həcm</th>
-                <th>Keyfiyyət</th>
-                <th>Dad</th>
-                <th>Gigiyena</th>
-                <th>Ümumi</th>
-                <th>Hədəf</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="overview-table"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- TAB: BAĞÇALAR -->
-    <div class="tab-pane" id="tab-kindergartens">
-
-      <div class="sec-head">
-        <h2>🏫 Bağça İdarəetməsi</h2>
-        <button class="btn btn-primary" onclick="openAddModal()">+ Əlavə et</button>
-      </div>
-
-      <div class="card">
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Bağçanın Adı</th>
-                <th>Region</th>
-                <th>Hədəf Bal</th>
-                <th>İştirakçı</th>
-                <th>Ümumi Bal</th>
-                <th>Əməliyyat</th>
-              </tr>
-            </thead>
-            <tbody id="kg-manage-table"></tbody>
-          </table>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- TAB: PIN -->
-    <div class="tab-pane" id="tab-pins">
-      <div class="sec-head"><h2>🔑 PIN Yarat &amp; İxrac et</h2></div>
-
-      <div class="card">
-        <div class="card-head"><h3>PIN Generator</h3></div>
-        <div style="padding:20px">
-          <div class="form-row">
-            <div class="field" style="grid-column:1/3">
-              <label>Bağça</label>
-              <select id="pin-kg-select"></select>
-            </div>
-            <div class="field">
-              <label>Say</label>
-              <input type="number" id="pin-count" value="50" min="1" max="200" class="small">
-            </div>
-            <div style="display:flex;gap:8px;padding-bottom:1px">
-              <button class="btn btn-primary" onclick="generatePins()">PIN Yarat</button>
-              <button class="btn btn-outline" onclick="exportPins()">📥 CSV</button>
-            </div>
-          </div>
-          <div class="pin-results" id="pin-results"></div>
-        </div>
+  <div class="card" id="survey-section">
+    <div class="kg-name" id="kg-name"></div>
+    <div class="question">
+      <label>1. Qidanın həcmi — porsiya uşağa yetirmi?</label>
+      <div class="options" data-q="volume">
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
       </div>
     </div>
+    <div class="question">
+      <label>2. Qidanın keyfiyyəti və tərkibi</label>
+      <div class="options" data-q="quality">
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
+      </div>
+    </div>
+    <div class="question">
+      <label>3. Yeməyin dadı — uşaq iştahla yeyirmi?</label>
+      <div class="options" data-q="taste">
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
+      </div>
+    </div>
+    <div class="question">
+      <label>4. Mətbəxin sanitar vəziyyəti və gigiyena</label>
+      <div class="options" data-q="hygiene">
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
+      </div>
+    </div>
+    <div class="question">
+      <label>💬 Əlavə qeyd (könüllü)</label>
+      <textarea id="comment" placeholder="Fikirlərinizi buraya yaza bilərsiniz..."></textarea>
+    </div>
+    <div class="error" id="survey-error"></div>
+    <button class="btn" id="submit-btn" onclick="submitSurvey()">✅ Sorğunu Tamamla</button>
+  </div>
 
-    <!-- TAB: ŞƏRHLƏR -->
-    <div class="tab-pane" id="tab-comments">
-      <div class="sec-head"><h2>💬 Valideyn Şərhləri</h2></div>
-      <div id="comments-list"></div>
-    </div>
-
-  </div><!-- /content -->
-</main>
-
-<!-- MODAL: Bağça əlavə/redaktə -->
-<div class="modal-overlay" id="kg-modal">
-  <div class="modal">
-    <h3 id="modal-title">Bağça Əlavə Et</h3>
-    <input type="hidden" id="modal-id">
-    <div class="field">
-      <label>Bağçanın Adı</label>
-      <input type="text" id="modal-name" placeholder="1 saylı Uşaq Bağçası">
-    </div>
-    <div class="field">
-      <label>Region / Şəhər</label>
-      <input type="text" id="modal-region" placeholder="Gəncə">
-    </div>
-    <div class="field">
-      <label>Hədəf Bal (1–3)</label>
-      <input type="number" id="modal-target" value="2.5" min="1" max="3" step="0.1">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" onclick="closeModal()">Ləğv et</button>
-      <button class="btn btn-primary" onclick="saveKg()">Saxla</button>
-    </div>
+  <div class="card" id="success-section">
+    <div class="big">🎉</div>
+    <h2>Təşəkkür edirik!</h2>
+    <p>Rəyiniz qeydə alındı.<br>Uşaqlarımızın sağlam qidalanmasına töhfə verdiyiniz üçün minnətdarıq.</p>
   </div>
 </div>
 
 <script>
-let dash = null;
-let kgList = [];
+let currentPin='';
+const video=document.getElementById('intro-video');
+const vsec=document.getElementById('video-section');
 
-// ─── TAB ─────────────────────────────────────────────
-function showTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['overview','kindergartens','pins','comments'];
-    t.classList.toggle('active', names[i] === name);
+function startVideo(){
+  video.muted=false;
+  video.play().then(()=>vsec.classList.add('video-playing')).catch(()=>{
+    video.muted=true;video.play();vsec.classList.add('video-playing');
   });
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
 }
+function skipVideo(e){e.stopPropagation();video.pause();vsec.style.display='none';}
+video.addEventListener('ended',()=>{vsec.style.display='none';});
 
-// ─── LOAD ─────────────────────────────────────────────
-async function refreshAll() {
-  try {
-    const [dRes, kRes] = await Promise.all([
-      fetch('/api/admin/dashboard'),
-      fetch('/api/admin/kindergartens')
-    ]);
-    if (dRes.status === 401) { location.href = '/admin'; return; }
-    dash = await dRes.json();
-    kgList = await kRes.json();
-    renderAll();
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('content').style.display = 'block';
-  } catch(e) {
-    document.getElementById('loading').textContent = '❌ Xəta baş verdi.';
+window.onload=()=>{
+  const pin=new URLSearchParams(window.location.search).get('pin');
+  if(pin&&/^\d{6}$/.test(pin)){document.getElementById('pin-input').value=pin;verifyPin();}
+};
+document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')verifyPin();});
+
+async function verifyPin(){
+  const pin=document.getElementById('pin-input').value.trim();
+  if(!/^\d{6}$/.test(pin)){document.getElementById('pin-error').textContent='6 rəqəmli PIN daxil edin';return;}
+  const btn=document.getElementById('pin-btn');
+  btn.disabled=true;btn.textContent='Yoxlanılır...';
+  try{
+    const r=await fetch(`/api/survey/verify?pin=${pin}`);
+    const d=await r.json();
+    if(r.ok&&d.valid){
+      currentPin=pin;
+      document.getElementById('pin-input').closest('.card').style.display='none';
+      document.getElementById('survey-section').style.display='block';
+      document.getElementById('kg-name').textContent='🏫 '+d.kindergartenName;
+    }else{
+      document.getElementById('pin-error').textContent=d.error||'PIN yanlışdır';
+      btn.disabled=false;btn.textContent='Daxil ol';
+    }
+  }catch{
+    document.getElementById('pin-error').textContent='Şəbəkə xətası.';
+    btn.disabled=false;btn.textContent='Daxil ol';
   }
 }
 
-function renderAll() {
-  renderKPI();
-  renderOverviewTable();
-  renderKgManageTable();
-  renderCharts();
-  renderComments();
-  renderPinSelect();
+function select(el){
+  el.parentElement.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function getVal(q){
+  const s=document.querySelector(`[data-q="${q}"] .opt.selected`);
+  return s?parseInt(s.dataset.v):null;
 }
 
-// ─── KPI ─────────────────────────────────────────────
-function renderKPI() {
-  const s = dash.stats;
-  const pct = s.total_pins > 0 ? Math.round(s.used_pins / s.total_pins * 100) : 0;
-  const avgAll = dash.kindergartens.filter(k=>k.participant_count>0);
-  const globalAvg = avgAll.length ? (avgAll.reduce((a,k)=>a+k.overall_avg,0)/avgAll.length).toFixed(2) : '—';
-
-  document.getElementById('kpi-row').innerHTML = `
-    <div class="kpi"><div class="num">${s.total_responses||0}</div><div class="lbl">Ümumi Cavab</div></div>
-    <div class="kpi"><div class="num">${s.total_kg||0}</div><div class="lbl">Bağça sayı</div></div>
-    <div class="kpi"><div class="num">${s.used_pins||0}</div><div class="lbl">İstifadə edilmiş PIN</div><div class="sub">İştirak: ${pct}%</div></div>
-    <div class="kpi"><div class="num">${s.active_pins||0}</div><div class="lbl">Aktiv PIN</div></div>
-    <div class="kpi"><div class="num">${globalAvg}</div><div class="lbl">Ümumi Ortalama</div><div class="sub">/ 3.0 maksimum</div></div>
-  `;
-}
-
-// ─── OVERVIEW TABLE ───────────────────────────────────
-function scoreCell(val) {
-  if (!val) return '<span style="color:#bbb">—</span>';
-  const pct = ((val-1)/2)*100;
-  const col = val>=2.5?'#5A8A6B':val>=1.8?'#E8743B':'#B23A33';
-  return `<div class="score-cell"><strong>${val}</strong>
-    <div class="bar"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
-}
-
-function statusBadge(avg, count) {
-  if (!count) return '<span class="badge badge-nd">Məlumat yoxdur</span>';
-  if (avg>=2.5) return '<span class="badge badge-ok">✅ Normal</span>';
-  if (avg>=1.8) return '<span class="badge badge-warn">⚠️ Diqqət</span>';
-  return '<span class="badge badge-alarm">🚨 Alarm</span>';
-}
-
-function targetCell(avg, target, count) {
-  if (!count) return '<span style="color:#bbb">—</span>';
-  const above = avg >= target;
-  return `<div class="target-cell">
-    <span class="target-badge ${above?'above':'below'}">${above?'▲ Hədəf üstündə':'▼ Hədəfdən aşağı'}</span>
-    <span style="color:var(--muted);font-size:.75rem">(${target})</span>
-  </div>`;
-}
-
-function renderOverviewTable() {
-  document.getElementById('overview-table').innerHTML = dash.kindergartens.map(k => `
-    <tr>
-      <td><strong>${esc(k.name)}</strong></td>
-      <td>${esc(k.region)}</td>
-      <td>${k.participant_count||0}</td>
-      <td>${scoreCell(k.avg_volume)}</td>
-      <td>${scoreCell(k.avg_quality)}</td>
-      <td>${scoreCell(k.avg_taste)}</td>
-      <td>${scoreCell(k.avg_hygiene)}</td>
-      <td>${scoreCell(k.overall_avg)}</td>
-      <td>${targetCell(k.overall_avg, k.target, k.participant_count)}</td>
-      <td>${statusBadge(k.overall_avg, k.participant_count)}</td>
-    </tr>`).join('');
-}
-
-// ─── KG MANAGE TABLE ─────────────────────────────────
-function renderKgManageTable() {
-  document.getElementById('kg-manage-table').innerHTML = dash.kindergartens.map((k,i) => `
-    <tr>
-      <td style="color:var(--muted)">${i+1}</td>
-      <td><strong>${esc(k.name)}</strong></td>
-      <td>${esc(k.region)}</td>
-      <td><strong>${k.target||2.5}</strong></td>
-      <td>${k.participant_count||0}</td>
-      <td>${k.overall_avg||'—'}</td>
-      <td>
-        <button class="btn-icon btn-edit" onclick="openEditModal(${k.id})" title="Redaktə">✏️</button>
-        <button class="btn-icon btn-del" onclick="deleteKg(${k.id},'${esc(k.name)}')" title="Sil">🗑️</button>
-      </td>
-    </tr>`).join('');
-}
-
-// ─── CHARTS ──────────────────────────────────────────
-let barChart, trendChart;
-function renderCharts() {
-  const kg = dash.kindergartens.filter(k=>k.participant_count>0);
-
-  // Bar chart
-  const bCtx = document.getElementById('chart-bar').getContext('2d');
-  if (barChart) barChart.destroy();
-  barChart = new Chart(bCtx, {
-    type: 'bar',
-    data: {
-      labels: kg.map(k=>k.name.length>14?k.name.slice(0,14)+'…':k.name),
-      datasets: [
-        { label:'Həcm', data:kg.map(k=>k.avg_volume||0), backgroundColor:'#5A8A6B' },
-        { label:'Keyfiyyət', data:kg.map(k=>k.avg_quality||0), backgroundColor:'#2d5a45' },
-        { label:'Dad', data:kg.map(k=>k.avg_taste||0), backgroundColor:'#E8743B' },
-        { label:'Gigiyena', data:kg.map(k=>k.avg_hygiene||0), backgroundColor:'#1F3D33' },
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      scales:{ y:{ min:0, max:3, ticks:{stepSize:.5}, grid:{color:'#eee'} }, x:{grid:{display:false}} },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11},boxWidth:12}} }
-    }
-  });
-
-  // Trend chart
-  const tCtx = document.getElementById('chart-trend').getContext('2d');
-  if (trendChart) trendChart.destroy();
-  const trend = dash.trend || [];
-  trendChart = new Chart(tCtx, {
-    type: 'line',
-    data: {
-      labels: trend.length ? trend.map(t=>t.day.slice(5)) : ['—'],
-      datasets: [{
-        label:'Gündəlik ortalama',
-        data: trend.length ? trend.map(t=>t.avg_score) : [0],
-        borderColor:'#5A8A6B', backgroundColor:'rgba(90,138,107,.1)',
-        borderWidth:2, tension:.3, fill:true,
-        pointBackgroundColor:'#1F3D33', pointRadius:4
-      },{
-        label:'Cavab sayı',
-        data: trend.length ? trend.map(t=>t.count) : [0],
-        borderColor:'#E8743B', backgroundColor:'transparent',
-        borderWidth:2, tension:.3, borderDash:[4,3],
-        pointRadius:3, yAxisID:'y2'
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      scales:{
-        y:{ min:1, max:3, position:'left', grid:{color:'#eee'}, ticks:{stepSize:.5} },
-        y2:{ position:'right', grid:{display:false}, ticks:{color:'#E8743B'} },
-        x:{grid:{display:false}}
-      },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11},boxWidth:12}} }
-    }
-  });
-}
-
-// ─── COMMENTS ────────────────────────────────────────
-function renderComments() {
-  const el = document.getElementById('comments-list');
-  if (!dash.comments.length) {
-    el.innerHTML = '<div class="empty">Hələ şərh yoxdur</div>'; return;
-  }
-  el.innerHTML = dash.comments.map(c=>`
-    <div class="comment-item">
-      <div class="comment-meta">🏫 ${esc(c.kindergarten_name)} &nbsp;·&nbsp; 🕐 ${c.submitted_at}</div>
-      <div class="comment-text">${esc(c.comment)}</div>
-    </div>`).join('');
-}
-
-// ─── PIN SELECT ──────────────────────────────────────
-function renderPinSelect() {
-  document.getElementById('pin-kg-select').innerHTML =
-    kgList.map(k=>`<option value="${k.id}">${esc(k.name)} — ${esc(k.region)}</option>`).join('');
-}
-
-// ─── PIN GENERATE ─────────────────────────────────────
-async function generatePins() {
-  const kg_id = document.getElementById('pin-kg-select').value;
-  const count = parseInt(document.getElementById('pin-count').value)||50;
-  const res = document.getElementById('pin-results');
-  res.style.display='block'; res.textContent='⏳ Yaradılır...';
-  try {
-    const r = await fetch('/api/admin/generate-pins',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({kindergarten_id:kg_id, count})
+async function submitSurvey(){
+  const v=getVal('volume'),q2=getVal('quality'),t=getVal('taste'),h=getVal('hygiene');
+  const err=document.getElementById('survey-error');
+  if(!v||!q2||!t||!h){err.textContent='Zəhmət olmasa bütün 4 sualı cavablandırın';return;}
+  err.textContent='';
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='Göndərilir...';
+  try{
+    const r=await fetch('/api/survey/submit',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:currentPin,volume_rating:v,quality_rating:q2,taste_rating:t,hygiene_rating:h,comment:document.getElementById('comment').value})
     });
-    const d = await r.json();
-    if(!r.ok){res.textContent='❌ '+(d.error||'Xəta');return;}
-    res.innerHTML=`<strong>${esc(d.kindergartenName)} — ${d.count} PIN:</strong><br><br>`+
-      d.links.map((l,i)=>`${i+1}. <strong>${l.pin}</strong> — <a href="${l.url}" target="_blank">${l.url}</a>`).join('<br>');
-  } catch { res.textContent='❌ Şəbəkə xətası'; }
-}
-
-async function exportPins() {
-  const kg_id = document.getElementById('pin-kg-select').value;
-  location.href = `/api/admin/export-pins/${kg_id}`;
-}
-
-// ─── KG MODAL ────────────────────────────────────────
-function openAddModal() {
-  document.getElementById('modal-title').textContent = 'Bağça Əlavə Et';
-  document.getElementById('modal-id').value = '';
-  document.getElementById('modal-name').value = '';
-  document.getElementById('modal-region').value = '';
-  document.getElementById('modal-target').value = '2.5';
-  document.getElementById('kg-modal').classList.add('open');
-}
-
-function openEditModal(id) {
-  const k = dash.kindergartens.find(k=>k.id===id);
-  if(!k) return;
-  document.getElementById('modal-title').textContent = 'Bağçanı Redaktə Et';
-  document.getElementById('modal-id').value = id;
-  document.getElementById('modal-name').value = k.name;
-  document.getElementById('modal-region').value = k.region;
-  document.getElementById('modal-target').value = k.target||2.5;
-  document.getElementById('kg-modal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('kg-modal').classList.remove('open');
-}
-
-async function saveKg() {
-  const id = document.getElementById('modal-id').value;
-  const body = {
-    name:   document.getElementById('modal-name').value.trim(),
-    region: document.getElementById('modal-region').value.trim(),
-    target: parseFloat(document.getElementById('modal-target').value)||2.5
-  };
-  if(!body.name||!body.region){alert('Ad və region tələb olunur');return;}
-
-  const url = id ? `/api/admin/kindergartens/${id}` : '/api/admin/kindergartens';
-  const method = id ? 'PUT' : 'POST';
-  const r = await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  const d = await r.json();
-  if(!r.ok){alert(d.error||'Xəta');return;}
-  closeModal();
-  refreshAll();
-}
-
-async function deleteKg(id, name) {
-  if(!confirm(`"${name}" bağçasını silmək istəyirsiniz?\n\nBütün cavablar və PIN-lər də silinəcək!`)) return;
-  const r = await fetch(`/api/admin/kindergartens/${id}`,{method:'DELETE'});
-  const d = await r.json();
-  if(!r.ok){alert(d.error||'Xəta');return;}
-  refreshAll();
-}
-
-// ─── LOGOUT ──────────────────────────────────────────
-async function logout() {
-  await fetch('/api/auth/logout',{method:'POST'});
-  location.href='/admin';
-}
-
-function esc(t=''){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-
-// ─── EXCEL EXPORT ─────────────────────────────────────
-function exportExcel() {
-  if (!dash) return;
-
-  const wb = XLSX.utils.book_new();
-
-  // ── Vərəq 1: Bağçalar üzrə Nəticələr ──
-  const kgHeaders = ['Bağçanın Adı','Region','İştirakçı Sayı','Həcm Ortalama','Keyfiyyət Ortalama','Dad Ortalama','Gigiyena Ortalama','Ümumi Ortalama','Hədəf Bal','Status'];
-  const kgRows = dash.kindergartens.map(k => {
-    let status = 'Məlumat yoxdur';
-    if (k.participant_count > 0) {
-      if (k.overall_avg >= 2.5) status = 'Normal';
-      else if (k.overall_avg >= 1.8) status = 'Diqqət';
-      else status = 'Alarm';
+    const d=await r.json();
+    if(r.ok){
+      document.getElementById('survey-section').style.display='none';
+      document.getElementById('success-section').style.display='block';
+    }else{
+      err.textContent=d.error||'Xəta baş verdi';
+      btn.disabled=false;btn.textContent='✅ Sorğunu Tamamla';
     }
-    return [
-      k.name, k.region,
-      k.participant_count || 0,
-      k.avg_volume    || '—',
-      k.avg_quality   || '—',
-      k.avg_taste     || '—',
-      k.avg_hygiene   || '—',
-      k.overall_avg   || '—',
-      k.target        || 2.5,
-      status
-    ];
-  });
-  const ws1 = XLSX.utils.aoa_to_sheet([kgHeaders, ...kgRows]);
-  ws1['!cols'] = [32,16,14,14,16,12,12,14,10,14].map(w=>({wch:w}));
-  // Başlıq hücrələrini qalın et
-  kgHeaders.forEach((_,i) => {
-    const cell = XLSX.utils.encode_cell({r:0, c:i});
-    if (ws1[cell]) ws1[cell].s = {font:{bold:true}, fill:{fgColor:{rgb:'1F3D33'}}, color:{rgb:'FFFFFF'}};
-  });
-  XLSX.utils.book_append_sheet(wb, ws1, 'Bağçalar üzrə Nəticələr');
-
-  // ── Vərəq 2: KPI Xülasəsi ──
-  const s = dash.stats;
-  const pct = s.total_pins > 0 ? Math.round(s.used_pins / s.total_pins * 100) : 0;
-  const avgAll = dash.kindergartens.filter(k=>k.participant_count>0);
-  const globalAvg = avgAll.length ? (avgAll.reduce((a,k)=>a+k.overall_avg,0)/avgAll.length).toFixed(2) : '—';
-  const ws2 = XLSX.utils.aoa_to_sheet([
-    ['Göstərici','Dəyər'],
-    ['Ümumi Cavab Sayı', s.total_responses || 0],
-    ['Bağça Sayı', s.total_kg || 0],
-    ['İstifadə Edilmiş PIN', s.used_pins || 0],
-    ['Aktiv PIN', s.active_pins || 0],
-    ['İştirak Faizi (%)', pct],
-    ['Qlobal Ortalama Bal', globalAvg],
-    ['İxrac Tarixi', new Date().toLocaleString('az-AZ')]
-  ]);
-  ws2['!cols'] = [{wch:28},{wch:20}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'KPI Xülasəsi');
-
-  // ── Vərəq 3: Son 7 Günün Trendi ──
-  if (dash.trend && dash.trend.length) {
-    const tHeaders = ['Tarix','Ortalama Bal','Cavab Sayı'];
-    const tRows = dash.trend.map(t => [t.day, t.avg_score, t.count]);
-    const ws3 = XLSX.utils.aoa_to_sheet([tHeaders, ...tRows]);
-    ws3['!cols'] = [{wch:14},{wch:14},{wch:12}];
-    XLSX.utils.book_append_sheet(wb, ws3, 'Trend (Son 7 Gün)');
+  }catch{
+    err.textContent='Şəbəkə xətası.';
+    btn.disabled=false;btn.textContent='✅ Sorğunu Tamamla';
   }
-
-  // ── Vərəq 4: Şərhlər ──
-  if (dash.comments && dash.comments.length) {
-    const cHeaders = ['Bağça','Tarix','Şərh'];
-    const cRows = dash.comments.map(c => [c.kindergarten_name, c.submitted_at, c.comment]);
-    const ws4 = XLSX.utils.aoa_to_sheet([cHeaders, ...cRows]);
-    ws4['!cols'] = [{wch:30},{wch:20},{wch:60}];
-    XLSX.utils.book_append_sheet(wb, ws4, 'Valideyn Şərhləri');
-  }
-
-  // Faylı endir
-  const date = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, `Qidalanma_Monitorinq_${date}.xlsx`);
 }
-
-// Close modal on overlay click
-document.getElementById('kg-modal').addEventListener('click', function(e){
-  if(e.target===this) closeModal();
-});
-
-refreshAll();
-setInterval(refreshAll, 60000);
 </script>
 </body>
 </html>
