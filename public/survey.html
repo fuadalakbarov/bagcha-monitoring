@@ -193,6 +193,22 @@ textarea:focus{border-color:#1a5c38;}
 #success-section h2{color:#0f2e1e;font-family:Georgia,serif;margin-bottom:7px;font-size:1.2rem;}
 #success-section p{color:#5a7a65;font-size:.88rem;line-height:1.6;}
 
+/* TƏLİMAT VIDEO MODAL (istifadəçi üçün) */
+.user-video-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;
+  display:none;align-items:center;justify-content:center;padding:18px}
+.user-video-overlay.open{display:flex}
+.user-video-box{background:#000;border-radius:16px;width:100%;max-width:720px;
+  position:relative;box-shadow:0 14px 60px rgba(0,0,0,.5);overflow:hidden}
+.user-video-box video{width:100%;display:block;max-height:80vh;background:#000}
+.user-video-title{position:absolute;top:14px;left:16px;color:#fff;font-size:.82rem;
+  font-weight:700;background:rgba(0,0,0,.5);padding:6px 14px;border-radius:20px;
+  z-index:5;letter-spacing:.02em}
+.user-video-close{position:absolute;top:10px;right:10px;width:36px;height:36px;
+  border-radius:50%;background:rgba(255,255,255,.94);border:none;cursor:pointer;
+  font-size:1.05rem;font-weight:700;color:#1a5c38;display:flex;align-items:center;
+  justify-content:center;z-index:10;transition:.15s}
+.user-video-close:hover{background:#fff;transform:scale(1.08)}
+
 /* ── MOBİL ── */
 @media(max-width:860px){
   .layout{flex-direction:column;}
@@ -215,6 +231,8 @@ textarea:focus{border-color:#1a5c38;}
   .video-panel{height:180px;}
   .card{padding:24px 18px;}
   .card-header h1{font-size:1.1rem;}
+  .user-video-box{border-radius:12px;}
+  .user-video-title{font-size:.72rem;padding:5px 11px;}
 }
 </style>
 </head>
@@ -322,6 +340,17 @@ textarea:focus{border-color:#1a5c38;}
 
 </div>
 
+<!-- MODAL: İstifadəçi Təlimatı Videosu -->
+<div class="user-video-overlay" id="user-video-modal">
+  <div class="user-video-box">
+    <span class="user-video-title">🎬 İstifadəçi Təlimatı</span>
+    <button class="user-video-close" onclick="closeUserTutorial()">✕</button>
+    <video id="user-tutorial-video" controls playsinline>
+      <source src="/istifadecitelimati_FtiyCJEf.mp4" type="video/mp4">
+    </video>
+  </div>
+</div>
+
 <script>
 let currentPin='';
 const video=document.getElementById('intro-video');
@@ -336,7 +365,28 @@ function startVideo(){
 function skipVideo(e){e.stopPropagation();video.pause();vsec.style.display='none';}
 video.addEventListener('ended',()=>{vsec.style.display='none';});
 
+// ─── TƏLİMAT VIDEOSU (istifadəçi üçün) ───────────────────────────
+function openUserTutorial(){
+  const v=document.getElementById('user-tutorial-video');
+  document.getElementById('user-video-modal').classList.add('open');
+  v.currentTime=0;
+  v.play().catch(()=>{});
+}
+function closeUserTutorial(){
+  const v=document.getElementById('user-tutorial-video');
+  v.pause();
+  document.getElementById('user-video-modal').classList.remove('open');
+}
+document.getElementById('user-tutorial-video').addEventListener('ended', closeUserTutorial);
+document.getElementById('user-video-modal').addEventListener('click', function(e){
+  if(e.target===this) closeUserTutorial();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape') closeUserTutorial();
+});
+
 window.onload=()=>{
+  openUserTutorial();
   const pin=new URLSearchParams(window.location.search).get('pin');
   if(pin&&/^\d{6}$/.test(pin)){document.getElementById('pin-input').value=pin;verifyPin();}
 };
