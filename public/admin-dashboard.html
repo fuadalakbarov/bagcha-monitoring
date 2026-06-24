@@ -142,6 +142,86 @@ tr:hover td{background:#fafcfa}
 /* TREND badge */
 .trend-up{color:var(--ok);font-size:.75rem;font-weight:700}
 .trend-dn{color:var(--alarm);font-size:.75rem;font-weight:700}
+
+/* ── RESPONSIVE ── */
+
+/* Tablet: 768px */
+@media(max-width:768px){
+  nav{padding:0 16px;height:52px}
+  .brand span{display:none}
+  .nav-btn{padding:6px 10px;font-size:.78rem}
+  .tabs{padding:0 12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:12px 14px;font-size:.82rem}
+  main{padding:16px 12px}
+  .kpi-row{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .charts-row{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr 1fr}
+  .modal{width:95vw;padding:20px}
+}
+
+/* Mobile: 480px */
+@media(max-width:480px){
+  nav{padding:0 12px;height:48px}
+  .brand{font-size:.88rem}
+  .nav-actions{gap:6px}
+  .nav-btn{padding:5px 9px;font-size:.75rem}
+  .tabs{padding:0 8px}
+  .tab{padding:10px 11px;font-size:.8rem}
+  main{padding:12px 10px}
+
+  /* KPI 2 sütun */
+  .kpi-row{grid-template-columns:1fr 1fr;gap:8px}
+  .kpi{padding:14px 12px}
+  .kpi .num{font-size:1.6rem}
+
+  /* Cədvəllər scroll edilə bilər */
+  .card div[style*="overflow-x"]{-webkit-overflow-scrolling:touch}
+  table{font-size:.78rem}
+  th,td{padding:8px 10px}
+
+  /* Score cell sadələşdir */
+  .score-cell .bar{display:none}
+
+  /* Target badge kiçilt */
+  .target-badge{font-size:.68rem;padding:2px 6px}
+  .target-cell span[style]{display:none}
+
+  /* Sec-head */
+  .sec-head{flex-direction:column;align-items:flex-start;gap:8px}
+  .sec-head .right{width:100%}
+  .sec-head .right .btn{width:100%;justify-content:center}
+
+  /* Form rows tam sütun */
+  .form-row{grid-template-columns:1fr}
+  .form-row div[style*="display:flex"]{flex-direction:row;gap:8px}
+  .form-row div[style*="display:flex"] .btn{flex:1}
+
+  /* Card head */
+  .card-head{padding:12px 14px;flex-direction:column;align-items:flex-start;gap:8px}
+
+  /* Charts */
+  .chart-card{padding:14px}
+  .chart-wrap{height:180px}
+
+  /* PIN results */
+  .pin-results{font-size:.74rem}
+
+  /* Modal */
+  .modal{padding:18px 16px}
+  .modal-actions{flex-direction:column-reverse}
+  .modal-actions .btn{width:100%}
+
+  /* Sec head btn */
+  .sec-head + .card .btn,
+  button.btn.btn-primary[onclick="openAddModal()"]{width:100%}
+}
+
+/* Çox kiçik ekranlar: 360px */
+@media(max-width:360px){
+  .kpi-row{grid-template-columns:1fr}
+  .tab{padding:9px 9px;font-size:.76rem}
+}
 </style>
 </head>
 <body>
@@ -167,6 +247,13 @@ tr:hover td{background:#fafcfa}
 
     <!-- TAB: İCMAL -->
     <div class="tab-pane active" id="tab-overview">
+
+      <div class="sec-head">
+        <h2>📊 Ümumi İcmal</h2>
+        <div class="right">
+          <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 Excel Endir</button>
+        </div>
+      </div>
 
       <div class="kpi-row" id="kpi-row"></div>
 
@@ -571,6 +658,79 @@ async function logout() {
 }
 
 function esc(t=''){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+// ─── EXCEL EXPORT ─────────────────────────────────────
+function exportExcel() {
+  if (!dash) return;
+
+  // CSV-to-Excel: BOM + tab-separated, Excel avtomatik tanıyır
+  function toCSV(headers, rows) {
+    const esc = v => {
+      const s = (v === null || v === undefined) ? '' : String(v);
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? '"' + s.replace(/"/g,'""') + '"' : s;
+    };
+    return [headers, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
+  }
+
+  function downloadCSV(csvStr, filename) {
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvStr], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  const date = new Date().toISOString().slice(0,10);
+
+  // ── 1. Bağçalar üzrə Nəticələr ──
+  const kgHeaders = ['Bagcanin Adi','Region','Istirakci Sayi','Hecm Ort','Keyfiyyət Ort','Dad Ort','Gigiyena Ort','Umumi Ortalama','Hedəf Bal','Status'];
+  const kgRows = dash.kindergartens.map(k => {
+    let status = 'Melumat yoxdur';
+    if (k.participant_count > 0) {
+      status = k.overall_avg >= 2.5 ? 'Normal' : k.overall_avg >= 1.8 ? 'Diqqet' : 'Alarm';
+    }
+    return [k.name, k.region, k.participant_count||0,
+      k.avg_volume||'', k.avg_quality||'', k.avg_taste||'', k.avg_hygiene||'',
+      k.overall_avg||'', k.target||2.5, status];
+  });
+  downloadCSV(toCSV(kgHeaders, kgRows), `Bagcalar_${date}.csv`);
+
+  // ── 2. KPI Xulasesi (100ms gecikmə ilə) ──
+  const s = dash.stats;
+  const pct = s.total_pins > 0 ? Math.round(s.used_pins / s.total_pins * 100) : 0;
+  const avgAll = dash.kindergartens.filter(k=>k.participant_count>0);
+  const globalAvg = avgAll.length ? (avgAll.reduce((a,k)=>a+parseFloat(k.overall_avg||0),0)/avgAll.length).toFixed(2) : '';
+  const kpiRows = [
+    ['Umumi Cavab Sayi', s.total_responses||0],
+    ['Bagca Sayi', s.total_kg||0],
+    ['Istifade Edilmis PIN', s.used_pins||0],
+    ['Aktiv PIN', s.active_pins||0],
+    ['Istirak Faizi (%)', pct],
+    ['Qlobal Ortalama Bal', globalAvg],
+    ['Ixrac Tarixi', new Date().toLocaleString()]
+  ];
+  setTimeout(() => downloadCSV(toCSV(['Gostərici','Dəyər'], kpiRows), `KPI_${date}.csv`), 400);
+
+  // ── 3. Trend ──
+  if (dash.trend && dash.trend.length) {
+    setTimeout(() => {
+      const tRows = dash.trend.map(t => [t.day, t.avg_score, t.count]);
+      downloadCSV(toCSV(['Tarix','Ortalama Bal','Cavab Sayi'], tRows), `Trend_${date}.csv`);
+    }, 800);
+  }
+
+  // ── 4. Şərhlər ──
+  if (dash.comments && dash.comments.length) {
+    setTimeout(() => {
+      const cRows = dash.comments.map(c => [c.kindergarten_name, c.submitted_at, c.comment]);
+      downloadCSV(toCSV(['Bagca','Tarix','Serh'], cRows), `Serhlər_${date}.csv`);
+    }, 1200);
+  }
+}
 
 // Close modal on overlay click
 document.getElementById('kg-modal').addEventListener('click', function(e){
