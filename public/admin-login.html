@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Giriş</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1F3D33,#2d5a45);
+  display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{background:#FAF6EF;border-radius:20px;padding:44px 40px;
+  box-shadow:0 8px 40px rgba(0,0,0,.3);width:100%;max-width:400px}
+.icon{text-align:center;font-size:3rem;margin-bottom:20px}
+h1{color:#1F3D33;font-size:1.3rem;text-align:center;margin-bottom:6px}
+.sub{color:#5c6b62;font-size:.85rem;text-align:center;margin-bottom:28px}
+label{display:block;color:#2B2823;font-weight:600;font-size:.9rem;margin-bottom:6px}
+input{width:100%;padding:13px 14px;border:2px solid #d1dbd4;border-radius:10px;
+  font-size:1rem;outline:none;transition:.2s}
+input:focus{border-color:#1F3D33}
+.btn{width:100%;padding:14px;background:#1F3D33;color:#FAF6EF;border:none;
+  border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:16px;transition:.2s}
+.btn:hover{background:#2d5a45}
+.btn:disabled{background:#9ab8a8;cursor:not-allowed}
+.error{color:#B23A33;font-size:.88rem;margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">🔐</div>
+  <h1>Admin Paneli</h1>
+  <p class="sub">Bağçada Qidalanma Monitorinq Sistemi</p>
+  <label for="pwd">Şifrə</label>
+  <input type="password" id="pwd" placeholder="Admin şifrəsini daxil edin"
+         onkeydown="if(event.key==='Enter')login()">
+  <div class="error" id="err"></div>
+  <button class="btn" id="btn" onclick="login()">Daxil ol</button>
+</div>
+<script>
+async function login() {
+  const pwd = document.getElementById('pwd').value;
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+  if (!pwd) { err.textContent = 'Şifrəni daxil edin'; return; }
+  btn.disabled = true; btn.textContent = 'Yoxlanılır...';
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ password: pwd })
+    });
+    if (r.ok) { window.location.href = '/dashboard'; }
+    else {
+      const d = await r.json();
+      err.textContent = d.error || 'Şifrə yanlışdır';
+      btn.disabled = false; btn.textContent = 'Daxil ol';
+    }
+  } catch {
+    err.textContent = 'Şəbəkə xətası';
+    btn.disabled = false; btn.textContent = 'Daxil ol';
+  }
+}
+</script>
+</body>
+</html>
