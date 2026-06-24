@@ -7,17 +7,14 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1F3D33 0%,#2d5a45 100%);
-  display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.card{background:#FAF6EF;border-radius:20px;padding:40px 44px;
-  box-shadow:0 8px 40px rgba(0,0,0,0.25);text-align:center;max-width:500px;width:100%}
-.logo{font-size:2.8rem;margin-bottom:12px}
-h1{color:#1F3D33;font-size:1.55rem;margin-bottom:8px;line-height:1.3}
-.sub{color:#5c6b62;margin-bottom:24px;font-size:.93rem;line-height:1.6}
-.video-wrap{border-radius:14px;overflow:hidden;margin-bottom:28px;
-  box-shadow:0 4px 20px rgba(0,0,0,.15);background:#000}
-video{width:100%;display:block;max-height:260px;object-fit:cover}
-.btn{display:block;padding:14px 32px;border-radius:12px;text-decoration:none;
-  font-size:.97rem;font-weight:600;margin-bottom:10px;transition:.2s}
+  display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{background:#FAF6EF;border-radius:20px;padding:52px 44px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.25);text-align:center;max-width:480px;width:90%}
+.logo{font-size:3.2rem;margin-bottom:16px}
+h1{color:#1F3D33;font-size:1.65rem;margin-bottom:10px;line-height:1.3}
+p{color:#5c6b62;margin-bottom:36px;font-size:.97rem;line-height:1.6}
+.btn{display:block;padding:15px 32px;border-radius:12px;text-decoration:none;
+  font-size:1rem;font-weight:600;margin-bottom:12px;transition:.2s}
 .btn-primary{background:#1F3D33;color:#FAF6EF}
 .btn-primary:hover{background:#2d5a45}
 .btn-outline{background:transparent;border:2px solid #1F3D33;color:#1F3D33}
@@ -28,18 +25,9 @@ video{width:100%;display:block;max-height:260px;object-fit:cover}
 <div class="card">
   <div class="logo">🌿</div>
   <h1>Bağçada Qidalanma<br>Monitorinq Sistemi</h1>
-  <p class="sub">Uşaq bağçalarında qidalanma keyfiyyətini<br>izləmək üçün rəqəmsal platforma</p>
-  <div class="video-wrap">
-    <video autoplay muted playsinline id="intro-video">
-      <source src="/survey-intro.mp4" type="video/mp4">
-    </video>
-  </div>
+  <p>Uşaq bağçalarında qidalanma keyfiyyətini<br>izləmək üçün rəqəmsal platforma</p>
   <a href="/survey" class="btn btn-primary">📋 Sorğu Doldur</a>
   <a href="/admin" class="btn btn-outline">🔐 Admin Paneli</a>
 </div>
-<script>
-  const v = document.getElementById('intro-video');
-  v.addEventListener('ended', () => { v.pause(); });
-</script>
 </body>
 </html>
