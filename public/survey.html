@@ -6,116 +6,136 @@
 <title>Valideyn Sorğusu</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',sans-serif;background:#f4f7f4;min-height:100vh;padding:24px 16px}
-.wrap{max-width:560px;margin:0 auto}
-.header{text-align:center;padding:32px 0 24px}
-.header .icon{font-size:2.8rem;margin-bottom:12px}
-.header h1{color:#1F3D33;font-size:1.4rem;font-weight:700}
-.header p{color:#5c6b62;font-size:.9rem;margin-top:6px}
-.card{background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 16px rgba(0,0,0,.08);margin-bottom:16px}
+body{font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(160deg,#0d2b20 0%,#1a4a32 50%,#0f3d2a 100%);
+  min-height:100vh;padding:28px 16px;display:flex;align-items:flex-start;justify-content:center}
+.wrap{width:100%;max-width:480px}
+.card{background:#fdfaf4;border-radius:20px;padding:36px 32px;
+  box-shadow:0 12px 48px rgba(0,0,0,.3);margin-bottom:16px}
+.card-header{text-align:center;margin-bottom:24px}
+.icon-wrap{width:52px;height:52px;background:#e8f5ee;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.5rem}
+.card-header h1{color:#0f2e1e;font-size:1.35rem;font-weight:700;line-height:1.35;font-family:Georgia,serif}
+.card-header p{color:#5a7a65;font-size:.88rem;margin-top:6px}
 
-/* PIN bölməsi */
-#pin-section .pin-label{color:#1F3D33;font-weight:600;margin-bottom:8px;display:block}
-.pin-input{width:100%;padding:14px 16px;border:2px solid #d1dbd4;border-radius:10px;
-  font-size:1.3rem;letter-spacing:.2em;text-align:center;outline:none;transition:.2s}
-.pin-input:focus{border-color:#1F3D33}
-.btn{width:100%;padding:14px;border:none;border-radius:10px;font-size:1rem;
-  font-weight:600;cursor:pointer;transition:.2s;margin-top:12px}
-.btn-green{background:#1F3D33;color:#fff}
-.btn-green:hover{background:#2d5a45}
-.btn-green:disabled{background:#9ab8a8;cursor:not-allowed}
-.error{color:#B23A33;font-size:.88rem;margin-top:8px;text-align:center}
+#video-section{padding:0;overflow:hidden;border-radius:14px;position:relative;cursor:pointer;margin-bottom:24px}
+#video-section video{width:100%;display:block;max-height:280px;object-fit:cover}
+.play-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:rgba(0,0,0,.35);transition:.2s}
+.play-overlay .play-btn{width:56px;height:56px;background:rgba(255,255,255,.9);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:8px}
+.play-overlay p{color:#fff;font-size:.88rem;font-weight:600}
+.video-playing .play-overlay{opacity:0;pointer-events:none}
+.skip-btn{position:absolute;bottom:10px;right:12px;background:rgba(0,0,0,.55);color:#fff;
+  border:none;padding:6px 13px;border-radius:8px;font-size:.78rem;cursor:pointer;display:none}
+.video-playing .skip-btn{display:block}
 
-/* Sorğu forması */
+.pin-label{font-size:.78rem;font-weight:700;color:#3a6b4a;text-transform:uppercase;
+  letter-spacing:.06em;display:block;margin-bottom:8px}
+.pin-input{width:100%;padding:13px;border:2px solid #c8ddd0;border-radius:11px;
+  font-size:1.3rem;letter-spacing:.22em;text-align:center;outline:none;
+  background:#fff;color:#0f2e1e;font-family:monospace;transition:.2s}
+.pin-input:focus{border-color:#1a5c38}
+.btn{width:100%;padding:14px;border:none;border-radius:11px;font-size:.97rem;
+  font-weight:700;cursor:pointer;margin-top:12px;transition:.2s;
+  background:#1a5c38;color:#e8f5ee;letter-spacing:.02em}
+.btn:hover{background:#0f3d26}
+.btn:disabled{background:#7aab8a;cursor:not-allowed}
+.error{color:#B23A33;font-size:.85rem;margin-top:8px;text-align:center}
+
 #survey-section{display:none}
-.kg-name{color:#1F3D33;font-weight:700;font-size:1rem;margin-bottom:20px;
-  padding:10px 14px;background:#e8f0ec;border-radius:8px;text-align:center}
-.question{margin-bottom:24px}
-.question label{display:block;color:#2B2823;font-weight:600;margin-bottom:12px;font-size:.97rem}
-.options{display:flex;gap:10px}
-.opt{flex:1;border:2px solid #d1dbd4;border-radius:10px;padding:12px 6px;
-  text-align:center;cursor:pointer;transition:.2s;font-size:.85rem;color:#5c6b62;user-select:none}
-.opt:hover{border-color:#5A8A6B;background:#f0f7f2}
-.opt.selected{border-color:#1F3D33;background:#1F3D33;color:#fff}
-.opt .score{display:block;font-size:1.5rem;margin-bottom:4px}
-textarea{width:100%;border:2px solid #d1dbd4;border-radius:10px;padding:12px;
-  font-size:.93rem;font-family:inherit;resize:vertical;min-height:90px;outline:none}
-textarea:focus{border-color:#1F3D33}
+.kg-name{color:#0f2e1e;font-weight:700;font-size:.95rem;margin-bottom:22px;
+  padding:10px 14px;background:#e4f2ea;border-radius:9px;text-align:center;
+  border-left:4px solid #1a5c38}
+.question{margin-bottom:22px}
+.question label{display:block;color:#1a3d2b;font-weight:600;margin-bottom:10px;font-size:.93rem}
+.options{display:flex;gap:8px}
+.opt{flex:1;border:2px solid #c8ddd0;border-radius:10px;padding:11px 5px;
+  text-align:center;cursor:pointer;transition:.2s;font-size:.8rem;color:#4a7a5a;
+  background:#f5fbf7;user-select:none}
+.opt:hover{border-color:#4a9e6a;background:#edf8f1}
+.opt.selected{border-color:#1a5c38;background:#1a5c38;color:#e8f5ee}
+.opt .score{display:block;font-size:1.4rem;margin-bottom:4px}
+textarea{width:100%;border:2px solid #c8ddd0;border-radius:10px;padding:12px;
+  font-size:.9rem;font-family:inherit;resize:vertical;min-height:90px;outline:none;
+  background:#fff;color:#0f2e1e}
+textarea:focus{border-color:#1a5c38}
 
-/* Uğur mesajı */
-#success-section{display:none;text-align:center;padding:20px 0}
-#success-section .big{font-size:4rem;margin-bottom:16px}
-#success-section h2{color:#1F3D33;margin-bottom:8px}
-#success-section p{color:#5c6b62}
+#success-section{display:none;text-align:center;padding:16px 0}
+#success-section .big{font-size:3.5rem;margin-bottom:14px}
+#success-section h2{color:#0f2e1e;font-family:Georgia,serif;margin-bottom:8px;font-size:1.3rem}
+#success-section p{color:#5a7a65;font-size:.9rem;line-height:1.6}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="header">
-    <div class="icon">🥗</div>
-    <h1>Bağçada Qidalanma Monitorinqi</h1>
-    <p>Rəyiniz uşaqlarımızın sağlam qidalanması üçün vacibdir</p>
-  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="icon-wrap">🥗</div>
+      <h1>Bağçada Qidalanma<br>Monitorinqi</h1>
+      <p>Rəyiniz uşaqlarımızın sağlamlığı üçün vacibdir</p>
+    </div>
 
-  <!-- PIN giriş -->
-  <div class="card" id="pin-section">
-    <span class="pin-label">🔑 PIN Kodunuzu daxil edin</span>
+    <div id="video-section" onclick="startVideo()">
+      <video id="intro-video" playsinline preload="auto">
+        <source src="/survey-intro.mp4" type="video/mp4">
+      </video>
+      <div class="play-overlay">
+        <div class="play-btn">▶</div>
+        <p>Videoya baxın</p>
+      </div>
+      <button class="skip-btn" onclick="skipVideo(event)">Keç →</button>
+    </div>
+
+    <span class="pin-label">🔑 PIN kodunuzu daxil edin</span>
     <input type="text" id="pin-input" class="pin-input" maxlength="6"
            placeholder="_ _ _ _ _ _" inputmode="numeric" autocomplete="off">
     <div class="error" id="pin-error"></div>
-    <button class="btn btn-green" id="pin-btn" onclick="verifyPin()">Daxil ol</button>
+    <button class="btn" id="pin-btn" onclick="verifyPin()">Daxil ol</button>
   </div>
 
-  <!-- Sorğu -->
   <div class="card" id="survey-section">
     <div class="kg-name" id="kg-name"></div>
-
     <div class="question">
       <label>1. Qidanın həcmi — porsiya uşağa yetirmi?</label>
       <div class="options" data-q="volume">
-        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı Deyiləm</div>
-        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən Razıyam</div>
-        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə Razıyam</div>
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
       </div>
     </div>
-
     <div class="question">
-      <label>2. Qidanın keyfiyyəti və tərkibi (təzəlik, allergiya)</label>
+      <label>2. Qidanın keyfiyyəti və tərkibi</label>
       <div class="options" data-q="quality">
-        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı Deyiləm</div>
-        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən Razıyam</div>
-        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə Razıyam</div>
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
       </div>
     </div>
-
     <div class="question">
       <label>3. Yeməyin dadı — uşaq iştahla yeyirmi?</label>
       <div class="options" data-q="taste">
-        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı Deyiləm</div>
-        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən Razıyam</div>
-        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə Razıyam</div>
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
       </div>
     </div>
-
     <div class="question">
       <label>4. Mətbəxin sanitar vəziyyəti və gigiyena</label>
       <div class="options" data-q="hygiene">
-        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı Deyiləm</div>
-        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən Razıyam</div>
-        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə Razıyam</div>
+        <div class="opt" data-v="1" onclick="select(this)"><span class="score">😕</span>Razı deyiləm</div>
+        <div class="opt" data-v="2" onclick="select(this)"><span class="score">😐</span>Qismən razıyam</div>
+        <div class="opt" data-v="3" onclick="select(this)"><span class="score">😊</span>Tamamilə razıyam</div>
       </div>
     </div>
-
     <div class="question">
-      <label>💬 Əlavə qeyd və şərh (könüllü)</label>
+      <label>💬 Əlavə qeyd (könüllü)</label>
       <textarea id="comment" placeholder="Fikirlərinizi buraya yaza bilərsiniz..."></textarea>
     </div>
-
     <div class="error" id="survey-error"></div>
-    <button class="btn btn-green" id="submit-btn" onclick="submitSurvey()">✅ Sorğunu Tamamla</button>
+    <button class="btn" id="submit-btn" onclick="submitSurvey()">✅ Sorğunu Tamamla</button>
   </div>
 
-  <!-- Uğur -->
   <div class="card" id="success-section">
     <div class="big">🎉</div>
     <h2>Təşəkkür edirik!</h2>
@@ -124,92 +144,80 @@ textarea:focus{border-color:#1F3D33}
 </div>
 
 <script>
-let currentPin = '';
+let currentPin='';
+const video=document.getElementById('intro-video');
+const vsec=document.getElementById('video-section');
 
-// URL-dən PIN al
-window.onload = () => {
-  const params = new URLSearchParams(window.location.search);
-  const pin = params.get('pin');
-  if (pin && /^\d{6}$/.test(pin)) {
-    document.getElementById('pin-input').value = pin;
-    verifyPin();
-  }
+function startVideo(){
+  video.muted=false;
+  video.play().then(()=>vsec.classList.add('video-playing')).catch(()=>{
+    video.muted=true;video.play();vsec.classList.add('video-playing');
+  });
+}
+function skipVideo(e){e.stopPropagation();video.pause();vsec.style.display='none';}
+video.addEventListener('ended',()=>{vsec.style.display='none';});
+
+window.onload=()=>{
+  const pin=new URLSearchParams(window.location.search).get('pin');
+  if(pin&&/^\d{6}$/.test(pin)){document.getElementById('pin-input').value=pin;verifyPin();}
 };
+document.getElementById('pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')verifyPin();});
 
-// Enter ile PIN yoxla
-document.getElementById('pin-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') verifyPin();
-});
-
-async function verifyPin() {
-  const pin = document.getElementById('pin-input').value.trim();
-  if (!/^\d{6}$/.test(pin)) {
-    document.getElementById('pin-error').textContent = '6 rəqəmli PIN daxil edin';
-    return;
-  }
-  const btn = document.getElementById('pin-btn');
-  btn.disabled = true; btn.textContent = 'Yoxlanılır...';
-
-  try {
-    const r = await fetch(`/api/survey/verify?pin=${pin}`);
-    const data = await r.json();
-    if (r.ok && data.valid) {
-      currentPin = pin;
-      document.getElementById('pin-section').style.display = 'none';
-      document.getElementById('survey-section').style.display = 'block';
-      document.getElementById('kg-name').textContent = '🏫 ' + data.kindergartenName;
-    } else {
-      document.getElementById('pin-error').textContent = data.error || 'PIN yanlışdır';
-      btn.disabled = false; btn.textContent = 'Daxil ol';
+async function verifyPin(){
+  const pin=document.getElementById('pin-input').value.trim();
+  if(!/^\d{6}$/.test(pin)){document.getElementById('pin-error').textContent='6 rəqəmli PIN daxil edin';return;}
+  const btn=document.getElementById('pin-btn');
+  btn.disabled=true;btn.textContent='Yoxlanılır...';
+  try{
+    const r=await fetch(`/api/survey/verify?pin=${pin}`);
+    const d=await r.json();
+    if(r.ok&&d.valid){
+      currentPin=pin;
+      document.getElementById('pin-input').closest('.card').style.display='none';
+      document.getElementById('survey-section').style.display='block';
+      document.getElementById('kg-name').textContent='🏫 '+d.kindergartenName;
+    }else{
+      document.getElementById('pin-error').textContent=d.error||'PIN yanlışdır';
+      btn.disabled=false;btn.textContent='Daxil ol';
     }
-  } catch {
-    document.getElementById('pin-error').textContent = 'Şəbəkə xətası. Yenidən cəhd edin.';
-    btn.disabled = false; btn.textContent = 'Daxil ol';
+  }catch{
+    document.getElementById('pin-error').textContent='Şəbəkə xətası.';
+    btn.disabled=false;btn.textContent='Daxil ol';
   }
 }
 
-function select(el) {
-  const group = el.parentElement;
-  group.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+function select(el){
+  el.parentElement.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
 }
-
-function getVal(q) {
-  const sel = document.querySelector(`[data-q="${q}"] .opt.selected`);
-  return sel ? parseInt(sel.dataset.v) : null;
+function getVal(q){
+  const s=document.querySelector(`[data-q="${q}"] .opt.selected`);
+  return s?parseInt(s.dataset.v):null;
 }
 
-async function submitSurvey() {
-  const v = getVal('volume'), q2 = getVal('quality'), t = getVal('taste'), h = getVal('hygiene');
-  const errEl = document.getElementById('survey-error');
-  if (!v || !q2 || !t || !h) {
-    errEl.textContent = 'Zəhmət olmasa bütün 4 sualı cavablandırın'; return;
-  }
-  errEl.textContent = '';
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true; btn.textContent = 'Göndərilir...';
-
-  try {
-    const r = await fetch('/api/survey/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        pin: currentPin,
-        volume_rating: v, quality_rating: q2, taste_rating: t, hygiene_rating: h,
-        comment: document.getElementById('comment').value
-      })
+async function submitSurvey(){
+  const v=getVal('volume'),q2=getVal('quality'),t=getVal('taste'),h=getVal('hygiene');
+  const err=document.getElementById('survey-error');
+  if(!v||!q2||!t||!h){err.textContent='Zəhmət olmasa bütün 4 sualı cavablandırın';return;}
+  err.textContent='';
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='Göndərilir...';
+  try{
+    const r=await fetch('/api/survey/submit',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({pin:currentPin,volume_rating:v,quality_rating:q2,taste_rating:t,hygiene_rating:h,comment:document.getElementById('comment').value})
     });
-    const data = await r.json();
-    if (r.ok) {
-      document.getElementById('survey-section').style.display = 'none';
-      document.getElementById('success-section').style.display = 'block';
-    } else {
-      errEl.textContent = data.error || 'Xəta baş verdi';
-      btn.disabled = false; btn.textContent = '✅ Sorğunu Tamamla';
+    const d=await r.json();
+    if(r.ok){
+      document.getElementById('survey-section').style.display='none';
+      document.getElementById('success-section').style.display='block';
+    }else{
+      err.textContent=d.error||'Xəta baş verdi';
+      btn.disabled=false;btn.textContent='✅ Sorğunu Tamamla';
     }
-  } catch {
-    errEl.textContent = 'Şəbəkə xətası. Yenidən cəhd edin.';
-    btn.disabled = false; btn.textContent = '✅ Sorğunu Tamamla';
+  }catch{
+    err.textContent='Şəbəkə xətası.';
+    btn.disabled=false;btn.textContent='✅ Sorğunu Tamamla';
   }
 }
 </script>
