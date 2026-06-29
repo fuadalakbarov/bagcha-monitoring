@@ -1,92 +1,54 @@
-const { DatabaseSync } = require('node:sqlite');
-const path = require('path');
-const fs = require('fs');
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://mrlysoiuphtmbcyjzjiv.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-
-const DB_PATH = path.join(DATA_DIR, 'monitoring.db');
-let db;
-
-function getDb() {
-  if (!db) {
-    db = new DatabaseSync(DB_PATH);
-    db.exec('PRAGMA journal_mode = WAL');
-    db.exec('PRAGMA foreign_keys = ON');
-    initSchema();
-  }
-  return db;
+function getHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Prefer': 'return=representation'
+  };
 }
 
-function initSchema() {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS kindergartens (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
-      name       TEXT NOT NULL,
-      region     TEXT NOT NULL,
-      target     REAL NOT NULL DEFAULT 2.5
-    );
-    CREATE TABLE IF NOT EXISTS survey_tokens (
-      id               INTEGER PRIMARY KEY AUTOINCREMENT,
-      kindergarten_id  INTEGER NOT NULL,
-      pin_code         TEXT    NOT NULL UNIQUE,
-      is_used          INTEGER NOT NULL DEFAULT 0,
-      valid_date       TEXT,
-      valid_hour_start INTEGER,
-      valid_hour_end   INTEGER,
-      created_at       TEXT    NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (kindergarten_id) REFERENCES kindergartens(id)
-    );
-    CREATE TABLE IF NOT EXISTS registrations (
-      id               INTEGER PRIMARY KEY AUTOINCREMENT,
-      surname          TEXT NOT NULL,
-      name             TEXT NOT NULL,
-      patronymic       TEXT NOT NULL,
-      phone            TEXT NOT NULL,
-      kindergarten_id  INTEGER NOT NULL,
-      appt_date        TEXT NOT NULL,
-      appt_hour        INTEGER NOT NULL,
-      pin_code         TEXT NOT NULL UNIQUE,
-      created_at       TEXT NOT NULL DEFAULT (datetime('now')),
-      FOREIGN KEY (kindergarten_id) REFERENCES kindergartens(id)
-    );
-    CREATE TABLE IF NOT EXISTS survey_responses (
-      id              INTEGER PRIMARY KEY AUTOINCREMENT,
-      kindergarten_id INTEGER NOT NULL,
-      volume_rating   INTEGER NOT NULL CHECK(volume_rating  BETWEEN 1 AND 3),
-      quality_rating  INTEGER NOT NULL CHECK(quality_rating BETWEEN 1 AND 3),
-      taste_rating    INTEGER NOT NULL CHECK(taste_rating   BETWEEN 1 AND 3),
-      hygiene_rating  INTEGER NOT NULL CHECK(hygiene_rating BETWEEN 1 AND 3),
-      comment         TEXT,
-      submitted_at    TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    INSERT OR IGNORE INTO kindergartens (id, name, region, target) VALUES
-      (1, '1 saylı Uşaq Bağçası', 'Gəncə', 2.5),
-      (2, '2 saylı Uşaq Bağçası', 'Gəncə', 2.5),
-      (3, 'Günəşli Bağça', 'Goranboy', 2.5),
-      (4, 'Şəfəq Bağçası', 'Samux', 2.5);
-  `);
-
-  // target sütunu köhnə DB-lərdə olmaya bilər — əlavə et
-  try { db.exec('ALTER TABLE kindergartens ADD COLUMN target REAL NOT NULL DEFAULT 2.5'); } catch {}
-  // valid_date, valid_hour_start/end köhnə survey_tokens-də olmaya bilər
-  try { db.exec('ALTER TABLE survey_tokens ADD COLUMN valid_date TEXT'); } catch {}
-  try { db.exec('ALTER TABLE survey_tokens ADD COLUMN valid_hour_start INTEGER'); } catch {}
-  try { db.exec('ALTER TABLE survey_tokens ADD COLUMN valid_hour_end INTEGER'); } catch {}
-  // registrations cədvəli (əgər köhnə DB-dir)
-  db.exec(`CREATE TABLE IF NOT EXISTS registrations (
-    id               INTEGER PRIMARY KEY AUTOINCREMENT,
-    surname          TEXT NOT NULL,
-    name             TEXT NOT NULL,
-    patronymic       TEXT NOT NULL,
-    phone            TEXT NOT NULL,
-    kindergarten_id  INTEGER NOT NULL,
-    appt_date        TEXT NOT NULL,
-    appt_hour        INTEGER NOT NULL,
-    pin_code         TEXT NOT NULL UNIQUE,
-    created_at       TEXT NOT NULL DEFAULT (datetime('now')),
-    FOREIGN KEY (kindergarten_id) REFERENCES kindergartens(id)
-  )`);
+async function query(table, params = {}) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  const r = await fetch(url, { headers: getHeaders() });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
 }
 
-module.exports = { getDb };
+async function insert(table, data) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: getHeaders(),
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function update(table, match, data) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+  Object.entries(match).forEach(([k, v]) => url.searchParams.set(k, `eq.${v}`));
+  const r = await fetch(url, {
+    method: 'PATCH',
+    headers: getHeaders(),
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function count(table, match) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+  Object.entries(match).forEach(([k, v]) => url.searchParams.set(k, `eq.${v}`));
+  const r = await fetch(url, {
+    headers: { ...getHeaders(), 'Prefer': 'count=exact', 'Range': '0-0' }
+  });
+  if (!r.ok) throw new Error(await r.text());
+  const range = r.headers.get('content-range');
+  return parseInt(range?.split('/')[1] || '0');
+}
+
+module.exports = { query, insert, update, count };
