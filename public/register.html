@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Randevu Qeydiyyatı</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Segoe UI',sans-serif;
+  background:#0d2b20;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  padding:28px 16px 48px;
+}
+
+/* Header */
+.site-header{
+  text-align:center;color:#FAF6EF;margin-bottom:24px;width:100%;max-width:520px;
+}
+.back-link{
+  display:inline-flex;align-items:center;gap:6px;
+  color:rgba(255,255,255,.55);font-size:.82rem;text-decoration:none;
+  margin-bottom:14px;transition:.15s;
+}
+.back-link:hover{color:#5ec98a;}
+.region-badge{
+  display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  border-radius:50px;padding:5px 16px;font-size:.75rem;letter-spacing:.05em;
+  text-transform:uppercase;color:#b8d4c0;margin-bottom:8px;
+}
+.site-header h2{font-size:clamp(1rem,4vw,1.4rem);font-weight:700;color:#fff;line-height:1.35;}
+.divider{width:40px;height:3px;background:#5ec98a;border-radius:4px;margin:10px auto 0;}
+
+/* Card */
+.card{
+  background:#fdfaf4;border-radius:20px;padding:32px 28px;
+  box-shadow:0 12px 48px rgba(0,0,0,.3);width:100%;max-width:500px;
+}
+.card-header{text-align:center;margin-bottom:26px;}
+.icon-wrap{
+  width:54px;height:54px;background:#e8f5ee;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;font-size:1.5rem;
+}
+.card-header h1{color:#0f2e1e;font-size:1.2rem;font-weight:700;line-height:1.35;font-family:Georgia,serif;}
+.card-header p{color:#5a7a65;font-size:.84rem;margin-top:5px;}
+
+/* Form */
+.field{margin-bottom:16px;}
+label{display:block;color:#1a3d2b;font-weight:600;font-size:.82rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+input,select{
+  width:100%;padding:11px 14px;border:2px solid #c8ddd0;border-radius:11px;
+  font-size:.93rem;color:#0f2e1e;background:#fff;outline:none;
+  font-family:inherit;transition:.2s;
+  appearance:none;-webkit-appearance:none;
+}
+input:focus,select:focus{border-color:#1a5c38;}
+input::placeholder{color:#aac0b0;}
+
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:420px){.row{grid-template-columns:1fr;}}
+
+/* Saat sechimi */
+.slots-wrap{display:flex;gap:10px;margin-top:4px;}
+.slot-btn{
+  flex:1;padding:13px 8px;border:2px solid #c8ddd0;border-radius:11px;
+  text-align:center;cursor:pointer;background:#f5fbf7;
+  color:#4a7a5a;font-size:.9rem;font-weight:600;transition:.2s;
+  user-select:none;
+}
+.slot-btn:hover{border-color:#4a9e6a;background:#edf8f1;}
+.slot-btn.selected{border-color:#1a5c38;background:#1a5c38;color:#e8f5ee;}
+.slot-btn.disabled{opacity:.4;cursor:not-allowed;background:#f0f0f0;color:#999;border-color:#ddd;}
+.slot-note{font-size:.75rem;color:#7a9a80;margin-top:6px;}
+
+.divider-hr{border:none;border-top:1px solid #dde8e2;margin:20px 0;}
+
+/* Düymə */
+.btn{
+  width:100%;padding:13px;border:none;border-radius:11px;font-size:.97rem;
+  font-weight:700;cursor:pointer;transition:.2s;
+  background:#1a5c38;color:#e8f5ee;letter-spacing:.02em;margin-top:4px;
+}
+.btn:hover{background:#0f3d26;}
+.btn:disabled{background:#7aab8a;cursor:not-allowed;}
+
+.error{color:#B23A33;font-size:.82rem;margin-top:8px;text-align:center;}
+
+/* Uğur ekranı */
+#success-section{display:none;text-align:center;padding:8px 0;}
+.success-icon{font-size:3.5rem;margin-bottom:14px;}
+#success-section h2{color:#0f2e1e;font-family:Georgia,serif;font-size:1.2rem;margin-bottom:10px;}
+#success-section p{color:#5a7a65;font-size:.88rem;line-height:1.65;margin-bottom:8px;}
+.pin-display{
+  font-size:2.6rem;font-weight:900;letter-spacing:.18em;color:#1a5c38;
+  font-family:monospace;background:#e8f5ee;padding:14px 20px;
+  border-radius:14px;border:2px solid #a0cdb0;margin:14px 0;display:inline-block;
+}
+.pin-info{
+  background:#fff8e1;border:1px solid #f0c040;border-radius:10px;
+  padding:12px 16px;font-size:.84rem;color:#7a5500;line-height:1.6;margin-top:12px;
+}
+.pin-info strong{color:#5a3d00;}
+.back-home{
+  display:inline-block;margin-top:18px;text-decoration:none;
+  color:#1a5c38;font-weight:600;font-size:.88rem;
+  padding:10px 20px;border:2px solid #1a5c38;border-radius:10px;
+  transition:.15s;
+}
+.back-home:hover{background:#e8f5ee;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="back-link">← Ana səhifəyə qayıt</a><br>
+  <div class="region-badge">Gəncə-Daşkəsən RTİ</div>
+  <h2>Yerindəcə Nəzarət Sorğusu<br>Randevu Qeydiyyatı</h2>
+  <div class="divider"></div>
+</header>
+
+<div class="card">
+  <div class="card-header">
+    <div class="icon-wrap">📋</div>
+    <h1>Qeydiyyat Forması</h1>
+    <p>Bütün xanaları doldurun və randevu saatınızı seçin</p>
+  </div>
+
+  <!-- FORM -->
+  <div id="form-section">
+
+    <div class="row">
+      <div class="field">
+        <label>Soyadı</label>
+        <input type="text" id="surname" placeholder="Əliyev" autocomplete="family-name">
+      </div>
+      <div class="field">
+        <label>Adı</label>
+        <input type="text" id="name" placeholder="Əli" autocomplete="given-name">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Ata adı</label>
+      <input type="text" id="patronymic" placeholder="Həsən oğlu">
+    </div>
+
+    <div class="field">
+      <label>Əlaqə nömrəsi</label>
+      <input type="tel" id="phone" placeholder="+994 50 000 00 00" autocomplete="tel">
+    </div>
+
+    <div class="field">
+      <label>Övladınızın bağçası</label>
+      <select id="kindergarten_id">
+        <option value="">— Seçin —</option>
+      </select>
+    </div>
+
+    <hr class="divider-hr">
+
+    <div class="field">
+      <label>Randevu tarixi</label>
+      <input type="date" id="appt_date">
+    </div>
+
+    <div class="field">
+      <label>Randevu saatı (12:00 – 14:00)</label>
+      <div class="slots-wrap">
+        <div class="slot-btn" id="slot-12" onclick="selectSlot(12)">🕛 12:00 – 13:00</div>
+        <div class="slot-btn" id="slot-13" onclick="selectSlot(13)">🕐 13:00 – 14:00</div>
+      </div>
+      <div class="slot-note" id="slot-note">Tarix və bağça seçdikdən sonra mövcud saatlar yüklənəcək</div>
+    </div>
+
+    <div class="error" id="form-error"></div>
+    <button class="btn" id="submit-btn" onclick="submitForm()">✅ Qeydiyyatı Tamamla</button>
+
+  </div>
+
+  <!-- UĞUR -->
+  <div id="success-section">
+    <div class="success-icon">🎉</div>
+    <h2>Qeydiyyat Tamamlandı!</h2>
+    <p>PIN kodunuz:</p>
+    <div class="pin-display" id="result-pin">——</div>
+    <p id="result-summary"></p>
+    <div class="pin-info">
+      ⚠️ Bu PIN kodu <strong>yalnız seçdiyiniz gün və saatda</strong> aktiv olacaq.<br>
+      Sorğuya daxil olmaq üçün PIN kodunuzu yadda saxlayın.<br>
+      PIN kodu <strong>bir dəfə</strong> istifadə oluna bilər.
+    </div>
+    <a href="/survey" class="back-home">🔑 Sorğuya keç</a>
+  </div>
+</div>
+
+<script>
+let selectedHour = null;
+
+// ── Bağça siyahısını yüklə ────────────────────────────────────────
+async function loadKindergartens() {
+  try {
+    const r = await fetch('/api/admin/kindergartens/public');
+    if (!r.ok) throw new Error();
+    const list = await r.json();
+    const sel = document.getElementById('kindergarten_id');
+    list.forEach(kg => {
+      const o = document.createElement('option');
+      o.value = kg.id;
+      o.textContent = kg.name + (kg.region ? ` (${kg.region})` : '');
+      sel.appendChild(o);
+    });
+  } catch {
+    // Əgər admin auth tələb olunursa, fallback siyahı
+    const sel = document.getElementById('kindergarten_id');
+    [
+      {id:1, name:'1 saylı Uşaq Bağçası', region:'Gəncə'},
+      {id:2, name:'2 saylı Uşaq Bağçası', region:'Gəncə'},
+      {id:3, name:'Günəşli Bağça', region:'Goranboy'},
+      {id:4, name:'Şəfəq Bağçası', region:'Samux'},
+    ].forEach(kg => {
+      const o = document.createElement('option');
+      o.value = kg.id;
+      o.textContent = kg.name + ` (${kg.region})`;
+      sel.appendChild(o);
+    });
+  }
+}
+
+// ── Minimum tarix: bu gün ─────────────────────────────────────────
+function setMinDate() {
+  const today = new Date().toISOString().slice(0, 10);
+  const inp = document.getElementById('appt_date');
+  inp.min = today;
+  inp.value = today;
+}
+
+// ── Mövcud saatları yüklə ────────────────────────────────────────
+async function loadSlots() {
+  const date = document.getElementById('appt_date').value;
+  const kgId = document.getElementById('kindergarten_id').value;
+  const s12 = document.getElementById('slot-12');
+  const s13 = document.getElementById('slot-13');
+  const note = document.getElementById('slot-note');
+
+  if (!date || !kgId) {
+    s12.className = 'slot-btn'; s13.className = 'slot-btn';
+    note.textContent = 'Tarix və bağça seçdikdən sonra mövcud saatlar yüklənəcək';
+    selectedHour = null;
+    return;
+  }
+
+  note.textContent = 'Yüklənir...';
+  try {
+    const r = await fetch(`/api/register/slots?date=${date}&kindergarten_id=${kgId}`);
+    const d = await r.json();
+    const free = d.free || [];
+
+    [12, 13].forEach(h => {
+      const el = document.getElementById(`slot-${h}`);
+      el.classList.remove('selected', 'disabled');
+      if (!free.includes(h)) {
+        el.classList.add('disabled');
+        if (selectedHour === h) selectedHour = null;
+      }
+    });
+
+    if (free.length === 0) {
+      note.textContent = '❌ Bu tarix üçün boş saat yoxdur. Başqa tarix seçin.';
+    } else {
+      note.textContent = `✅ Mövcud saatlar: ${free.map(h=>h+':00').join(', ')}`;
+    }
+  } catch {
+    note.textContent = 'Saatlar yüklənə bilmədi.';
+  }
+}
+
+function selectSlot(hour) {
+  const el = document.getElementById(`slot-${hour}`);
+  if (el.classList.contains('disabled')) return;
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedHour = hour;
+}
+
+// ── Formu göndər ─────────────────────────────────────────────────
+async function submitForm() {
+  const surname = document.getElementById('surname').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const patronymic = document.getElementById('patronymic').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const kindergarten_id = document.getElementById('kindergarten_id').value;
+  const appt_date = document.getElementById('appt_date').value;
+  const errEl = document.getElementById('form-error');
+  errEl.textContent = '';
+
+  if (!surname || !name || !patronymic)
+    return errEl.textContent = 'Soyadı, adı və ata adını daxil edin';
+  if (!phone)
+    return errEl.textContent = 'Əlaqə nömrəsini daxil edin';
+  if (!kindergarten_id)
+    return errEl.textContent = 'Bağça seçin';
+  if (!appt_date)
+    return errEl.textContent = 'Randevu tarixi seçin';
+  if (!selectedHour)
+    return errEl.textContent = 'Randevu saatı seçin';
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = 'Göndərilir...';
+
+  try {
+    const r = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ surname, name, patronymic, phone, kindergarten_id, appt_date, appt_hour: selectedHour })
+    });
+    const d = await r.json();
+
+    if (r.ok && d.ok) {
+      document.getElementById('result-pin').textContent = d.pin;
+      document.getElementById('result-summary').textContent =
+        `📅 ${d.appt_date} tarixində saat ${d.appt_hour}:00–${d.appt_hour+1}:00 · ${d.kindergartenName}`;
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('success-section').style.display = 'block';
+    } else {
+      errEl.textContent = d.error || 'Xəta baş verdi';
+      btn.disabled = false; btn.textContent = '✅ Qeydiyyatı Tamamla';
+    }
+  } catch {
+    errEl.textContent = 'Şəbəkə xətası.';
+    btn.disabled = false; btn.textContent = '✅ Qeydiyyatı Tamamla';
+  }
+}
+
+// ── Event listeners ──────────────────────────────────────────────
+document.getElementById('appt_date').addEventListener('change', loadSlots);
+document.getElementById('kindergarten_id').addEventListener('change', loadSlots);
+
+// Init
+loadKindergartens();
+setMinDate();
+</script>
+</body>
+</html>
