@@ -172,6 +172,7 @@ input::placeholder{color:#aac0b0;}
 </header>
 
 <div class="card">
+  <div id="intro-block">
   <div class="card-header">
     <div class="icon-wrap">📋</div>
     <h1>Qeydiyyat Forması</h1>
@@ -185,6 +186,7 @@ input::placeholder{color:#aac0b0;}
       Brauzeriniz video oynatmağı dəstəkləmir.
     </video>
     <div class="video-caption">▶️ Qeydiyyat təlimatı — baxmaq üçün oynadın</div>
+  </div>
   </div>
 
   <!-- FORM -->
@@ -505,8 +507,11 @@ async function submitForm() {
       document.getElementById('result-pin').textContent = d.pin;
       document.getElementById('result-summary').textContent =
         `📅 ${d.appt_date} · saat ${d.slot_label} · ${d.kindergartenName}`;
+      document.getElementById('intro-block').style.display = 'none';
       document.getElementById('form-section').style.display = 'none';
       document.getElementById('success-section').style.display = 'block';
+      try { document.getElementById('reg-video').pause(); } catch(e){}
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       errEl.textContent = d.error || 'Xəta baş verdi';
       btn.disabled = false; btn.textContent = '✅ Qeydiyyatı Tamamla';
