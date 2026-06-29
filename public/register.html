@@ -8,7 +8,11 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{
   font-family:'Segoe UI',sans-serif;
-  background:#0d2b20;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(94,201,138,.10) 0%, transparent 35%),
+    radial-gradient(circle at 85% 75%, rgba(94,201,138,.08) 0%, transparent 40%),
+    linear-gradient(160deg, #0a2419 0%, #0d2b20 45%, #103325 100%);
+  background-attachment:fixed;
   min-height:100vh;
   display:flex;flex-direction:column;
   align-items:center;justify-content:flex-start;
@@ -17,7 +21,7 @@ body{
 
 /* Header */
 .site-header{
-  text-align:center;color:#FAF6EF;margin-bottom:24px;width:100%;max-width:520px;
+  text-align:center;color:#FAF6EF;margin-bottom:24px;width:100%;max-width:600px;
 }
 .back-link{
   display:inline-flex;align-items:center;gap:6px;
@@ -47,6 +51,28 @@ body{
 .card-header h1{color:#0f2e1e;font-size:1.2rem;font-weight:700;line-height:1.35;font-family:Georgia,serif;}
 .card-header p{color:#5a7a65;font-size:.84rem;margin-top:5px;}
 
+/* Təlimat videosu */
+.video-box{
+  margin:0 0 24px;border-radius:14px;overflow:hidden;
+  background:#000;border:1px solid #d0e4d8;
+  box-shadow:0 4px 18px rgba(15,46,30,.12);
+  text-align:center;
+}
+.video-box video{
+  width:100%;
+  max-width:100%;
+  height:auto;
+  max-height:340px;
+  display:block;
+  margin:0 auto;
+  background:#000;
+  object-fit:contain;
+}
+.video-caption{
+  background:#e8f5ee;color:#1a5c38;font-size:.8rem;font-weight:600;
+  text-align:center;padding:9px;letter-spacing:.02em;
+}
+
 /* Form */
 .field{margin-bottom:16px;}
 label{display:block;color:#1a3d2b;font-weight:600;font-size:.82rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
@@ -63,11 +89,11 @@ input::placeholder{color:#aac0b0;}
 @media(max-width:420px){.row{grid-template-columns:1fr;}}
 
 /* Saat sechimi */
-.slots-wrap{display:flex;gap:10px;margin-top:4px;}
+.slots-wrap{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
 .slot-btn{
-  flex:1;padding:13px 8px;border:2px solid #c8ddd0;border-radius:11px;
+  width:100%;padding:14px 12px;border:2px solid #c8ddd0;border-radius:11px;
   text-align:center;cursor:pointer;background:#f5fbf7;
-  color:#4a7a5a;font-size:.9rem;font-weight:600;transition:.2s;
+  color:#4a7a5a;font-size:.95rem;font-weight:600;transition:.2s;
   user-select:none;
 }
 .slot-btn:hover{border-color:#4a9e6a;background:#edf8f1;}
@@ -81,6 +107,25 @@ input::placeholder{color:#aac0b0;}
   letter-spacing:.07em;margin-bottom:14px;padding-bottom:6px;
   border-bottom:2px solid #e0f0e8;
 }
+
+/* Axtarışlı bağça seçimi */
+.combo{position:relative;}
+.combo-list{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;
+  background:#fff;border:2px solid #c8ddd0;border-radius:11px;
+  max-height:240px;overflow-y:auto;display:none;
+  box-shadow:0 8px 24px rgba(15,46,30,.15);
+}
+.combo-list.open{display:block;}
+.combo-item{
+  padding:10px 14px;font-size:.88rem;color:#1a3d2b;cursor:pointer;
+  border-bottom:1px solid #f0f5f2;line-height:1.4;
+}
+.combo-item:last-child{border-bottom:none;}
+.combo-item:hover,.combo-item.active{background:#e8f5ee;color:#0f3d26;}
+.combo-item .hl{background:#fff3a0;font-weight:700;border-radius:2px;}
+.combo-empty{padding:12px 14px;font-size:.84rem;color:#999;text-align:center;}
+#kg-search.has-value{border-color:#1a5c38;background:#f5fbf7;font-weight:600;}
 
 /* Düymə */
 .btn{
@@ -122,7 +167,7 @@ input::placeholder{color:#aac0b0;}
 <header class="site-header">
   <a href="/" class="back-link">← Ana səhifəyə qayıt</a><br>
   <div class="region-badge">Gəncə-Daşkəsən RTİ</div>
-  <h2>Yerindəcə Nəzarət Sorğusu<br>Randevu Qeydiyyatı</h2>
+  <h2>Yerində Nəzarət Sorğusu<br>Randevu Qeydiyyatı</h2>
   <div class="divider"></div>
 </header>
 
@@ -131,6 +176,15 @@ input::placeholder{color:#aac0b0;}
     <div class="icon-wrap">📋</div>
     <h1>Qeydiyyat Forması</h1>
     <p>Bütün xanaları doldurun və randevu saatınızı seçin</p>
+  </div>
+
+  <!-- TƏLİMAT VİDEOSU -->
+  <div class="video-box">
+    <video id="reg-video" controls playsinline preload="metadata" poster="">
+      <source src="/Qeydiyyat videosu.mp4" type="video/mp4">
+      Brauzeriniz video oynatmağı dəstəkləmir.
+    </video>
+    <div class="video-caption">▶️ Qeydiyyat təlimatı — baxmaq üçün oynadın</div>
   </div>
 
   <!-- FORM -->
@@ -182,10 +236,19 @@ input::placeholder{color:#aac0b0;}
     <div class="section-title">🏫 Bağça və randevu</div>
 
     <div class="field">
-      <label>Övladınızın bağçası</label>
-      <select id="kindergarten_id">
+      <label>Şəhər / Rayon</label>
+      <select id="region_select">
         <option value="">— Seçin —</option>
       </select>
+    </div>
+
+    <div class="field">
+      <label>Övladınızın bağçası</label>
+      <div class="combo" id="kg-combo">
+        <input type="text" id="kg-search" placeholder="Əvvəlcə şəhər seçin" autocomplete="off" disabled>
+        <input type="hidden" id="kindergarten_id">
+        <div class="combo-list" id="kg-list"></div>
+      </div>
     </div>
 
     <hr class="divider-hr">
@@ -196,10 +259,9 @@ input::placeholder{color:#aac0b0;}
     </div>
 
     <div class="field">
-      <label>Randevu saatı (12:00 – 14:00)</label>
-      <div class="slots-wrap">
-        <div class="slot-btn" id="slot-12" onclick="selectSlot(12)">🕛 12:00 – 13:00</div>
-        <div class="slot-btn" id="slot-13" onclick="selectSlot(13)">🕐 13:00 – 14:00</div>
+      <label>Randevu saatı (11:30 – 14:00)</label>
+      <div class="slots-wrap" id="slots-wrap">
+        <!-- slotlar JS ilə yüklənir -->
       </div>
       <div class="slot-note" id="slot-note">Tarix və bağça seçdikdən sonra mövcud saatlar yüklənəcək</div>
     </div>
@@ -227,36 +289,107 @@ input::placeholder{color:#aac0b0;}
 
 <script>
 let selectedHour = null;
+let allKindergartens = [];
+
+// Region sırası
+const REGION_ORDER = ['Gəncə','Göygöl','Goranboy','Daşkəsən','Samux','Naftalan'];
 
 // ── Bağça siyahısını yüklə ────────────────────────────────────────
 async function loadKindergartens() {
   try {
     const r = await fetch('/api/admin/kindergartens/public');
     if (!r.ok) throw new Error();
-    const list = await r.json();
-    const sel = document.getElementById('kindergarten_id');
-    list.forEach(kg => {
-      const o = document.createElement('option');
-      o.value = kg.id;
-      o.textContent = kg.name + (kg.region ? ` (${kg.region})` : '');
-      sel.appendChild(o);
-    });
+    allKindergartens = await r.json();
   } catch {
-    // Əgər admin auth tələb olunursa, fallback siyahı
-    const sel = document.getElementById('kindergarten_id');
-    [
-      {id:1, name:'1 saylı Uşaq Bağçası', region:'Gəncə'},
-      {id:2, name:'2 saylı Uşaq Bağçası', region:'Gəncə'},
-      {id:3, name:'Günəşli Bağça', region:'Goranboy'},
-      {id:4, name:'Şəfəq Bağçası', region:'Samux'},
-    ].forEach(kg => {
-      const o = document.createElement('option');
-      o.value = kg.id;
-      o.textContent = kg.name + ` (${kg.region})`;
-      sel.appendChild(o);
+    allKindergartens = [];
+  }
+
+  // Şəhərləri çıxar
+  const regions = [...new Set(allKindergartens.map(k => k.region).filter(Boolean))];
+  regions.sort((a,b) => {
+    const ai = REGION_ORDER.indexOf(a), bi = REGION_ORDER.indexOf(b);
+    return (ai<0?99:ai) - (bi<0?99:bi);
+  });
+
+  const regSel = document.getElementById('region_select');
+  regions.forEach(reg => {
+    const count = allKindergartens.filter(k => k.region === reg).length;
+    const o = document.createElement('option');
+    o.value = reg;
+    o.textContent = `${reg} (${count} bağça)`;
+    regSel.appendChild(o);
+  });
+}
+
+// ── Şəhər seçildikdə bağçaları hazırla ───────────────────────────
+let regionKindergartens = []; // hazırkı şəhərin bağçaları
+
+function onRegionChange() {
+  const region = document.getElementById('region_select').value;
+  const search = document.getElementById('kg-search');
+  const hidden = document.getElementById('kindergarten_id');
+
+  // sıfırla
+  hidden.value = '';
+  search.value = '';
+  search.classList.remove('has-value');
+  closeKgList();
+
+  if (!region) {
+    regionKindergartens = [];
+    search.disabled = true;
+    search.placeholder = 'Əvvəlcə şəhər seçin';
+    loadSlots();
+    return;
+  }
+
+  regionKindergartens = allKindergartens
+    .filter(k => k.region === region)
+    .sort((a,b) => a.name.localeCompare(b.name, 'az'));
+
+  search.disabled = false;
+  search.placeholder = 'Bağça adını yazın (məs: 39, balçılı...)';
+  renderKgList('');
+  loadSlots();
+}
+
+// ── Combobox: siyahını render et ─────────────────────────────────
+function highlight(text, q) {
+  if (!q) return text;
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if (i < 0) return text;
+  return text.slice(0,i) + '<span class="hl">' + text.slice(i, i+q.length) + '</span>' + text.slice(i+q.length);
+}
+
+function renderKgList(query) {
+  const list = document.getElementById('kg-list');
+  const q = query.trim().toLowerCase();
+  const matches = regionKindergartens.filter(k => k.name.toLowerCase().includes(q));
+
+  if (!matches.length) {
+    list.innerHTML = '<div class="combo-empty">Uyğun bağça tapılmadı</div>';
+  } else {
+    list.innerHTML = matches.map(k =>
+      `<div class="combo-item" data-id="${k.id}" data-name="${k.name.replace(/"/g,'&quot;')}">${highlight(k.name, query.trim())}</div>`
+    ).join('');
+    list.querySelectorAll('.combo-item').forEach(el => {
+      el.onclick = () => selectKg(el.dataset.id, el.dataset.name);
     });
   }
+  openKgList();
 }
+
+function selectKg(id, name) {
+  document.getElementById('kindergarten_id').value = id;
+  const search = document.getElementById('kg-search');
+  search.value = name;
+  search.classList.add('has-value');
+  closeKgList();
+  loadSlots();
+}
+
+function openKgList(){ document.getElementById('kg-list').classList.add('open'); }
+function closeKgList(){ document.getElementById('kg-list').classList.remove('open'); }
 
 // ── Minimum tarix: bu gün ─────────────────────────────────────────
 function setMinDate() {
@@ -270,48 +403,54 @@ function setMinDate() {
 async function loadSlots() {
   const date = document.getElementById('appt_date').value;
   const kgId = document.getElementById('kindergarten_id').value;
-  const s12 = document.getElementById('slot-12');
-  const s13 = document.getElementById('slot-13');
+  const wrap = document.getElementById('slots-wrap');
   const note = document.getElementById('slot-note');
 
   if (!date || !kgId) {
-    s12.className = 'slot-btn'; s13.className = 'slot-btn';
+    wrap.innerHTML = '';
     note.textContent = 'Tarix və bağça seçdikdən sonra mövcud saatlar yüklənəcək';
     selectedHour = null;
     return;
   }
 
   note.textContent = 'Yüklənir...';
+  wrap.innerHTML = '';
   try {
     const r = await fetch(`/api/register/slots?date=${date}&kindergarten_id=${kgId}`);
     const d = await r.json();
-    const free = d.free || [];
+    const all = d.all || [];
+    const freeIds = (d.free || []).map(s => s.id);
 
-    [12, 13].forEach(h => {
-      const el = document.getElementById(`slot-${h}`);
-      el.classList.remove('selected', 'disabled');
-      if (!free.includes(h)) {
+    all.forEach(slot => {
+      const el = document.createElement('div');
+      el.className = 'slot-btn';
+      el.id = `slot-${slot.id}`;
+      el.textContent = `🕐 ${slot.label}`;
+      if (!freeIds.includes(slot.id)) {
         el.classList.add('disabled');
-        if (selectedHour === h) selectedHour = null;
+        if (selectedHour === slot.id) selectedHour = null;
+      } else {
+        el.onclick = () => selectSlot(slot.id);
       }
+      wrap.appendChild(el);
     });
 
-    if (free.length === 0) {
+    if (freeIds.length === 0) {
       note.textContent = '❌ Bu tarix üçün boş saat yoxdur. Başqa tarix seçin.';
     } else {
-      note.textContent = `✅ Mövcud saatlar: ${free.map(h=>h+':00').join(', ')}`;
+      note.textContent = `✅ ${freeIds.length} boş saat mövcuddur`;
     }
   } catch {
     note.textContent = 'Saatlar yüklənə bilmədi.';
   }
 }
 
-function selectSlot(hour) {
-  const el = document.getElementById(`slot-${hour}`);
-  if (el.classList.contains('disabled')) return;
+function selectSlot(id) {
+  const el = document.getElementById(`slot-${id}`);
+  if (!el || el.classList.contains('disabled')) return;
   document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
-  selectedHour = hour;
+  selectedHour = id;
 }
 
 // ── Formu göndər ─────────────────────────────────────────────────
@@ -355,7 +494,7 @@ async function submitForm() {
     if (r.ok && d.ok) {
       document.getElementById('result-pin').textContent = d.pin;
       document.getElementById('result-summary').textContent =
-        `📅 ${d.appt_date} tarixində saat ${d.appt_hour}:00–${d.appt_hour+1}:00 · ${d.kindergartenName}`;
+        `📅 ${d.appt_date} · saat ${d.slot_label} · ${d.kindergartenName}`;
       document.getElementById('form-section').style.display = 'none';
       document.getElementById('success-section').style.display = 'block';
     } else {
@@ -370,7 +509,25 @@ async function submitForm() {
 
 // ── Event listeners ──────────────────────────────────────────────
 document.getElementById('appt_date').addEventListener('change', loadSlots);
-document.getElementById('kindergarten_id').addEventListener('change', loadSlots);
+document.getElementById('region_select').addEventListener('change', onRegionChange);
+
+const kgSearch = document.getElementById('kg-search');
+// Yazanda filterlə
+kgSearch.addEventListener('input', (e) => {
+  // əgər istifadəçi seçimdən sonra yenidən yazırsa, seçimi sıfırla
+  document.getElementById('kindergarten_id').value = '';
+  kgSearch.classList.remove('has-value');
+  renderKgList(e.target.value);
+  loadSlots();
+});
+// Fokuslaşanda siyahını aç
+kgSearch.addEventListener('focus', () => {
+  if (!kgSearch.disabled) renderKgList(kgSearch.value);
+});
+// Kənara klikləyəndə siyahını bağla
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('kg-combo').contains(e.target)) closeKgList();
+});
 
 // Init
 loadKindergartens();
