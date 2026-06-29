@@ -88,6 +88,8 @@ input::placeholder{color:#aac0b0;}
 
 .error{color:#B23A33;font-size:.82rem;margin-top:8px;text-align:center;}
 
+.section-title{font-size:.78rem;font-weight:700;color:#1a5c38;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;padding:6px 0 4px;border-bottom:2px solid #d0e8d9;}
+
 /* Uğur ekranı */
 #success-section{display:none;text-align:center;padding:8px 0;}
 .success-icon{font-size:3.5rem;margin-bottom:14px;}
@@ -131,6 +133,8 @@ input::placeholder{color:#aac0b0;}
   <!-- FORM -->
   <div id="form-section">
 
+    <p class="section-title">👤 Valideyn məlumatları</p>
+
     <div class="row">
       <div class="field">
         <label>Soyadı</label>
@@ -150,6 +154,26 @@ input::placeholder{color:#aac0b0;}
     <div class="field">
       <label>Əlaqə nömrəsi</label>
       <input type="tel" id="phone" placeholder="+994 50 000 00 00" autocomplete="tel">
+    </div>
+
+    <hr class="divider-hr">
+
+    <p class="section-title">🧒 Övladın məlumatları</p>
+
+    <div class="row">
+      <div class="field">
+        <label>Soyadı</label>
+        <input type="text" id="child_surname" placeholder="Əliyev">
+      </div>
+      <div class="field">
+        <label>Adı</label>
+        <input type="text" id="child_name" placeholder="Anar">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Ata adı</label>
+      <input type="text" id="child_patronymic" placeholder="Əli oğlu">
     </div>
 
     <div class="field">
@@ -291,15 +315,20 @@ async function submitForm() {
   const name = document.getElementById('name').value.trim();
   const patronymic = document.getElementById('patronymic').value.trim();
   const phone = document.getElementById('phone').value.trim();
+  const child_surname = document.getElementById('child_surname').value.trim();
+  const child_name = document.getElementById('child_name').value.trim();
+  const child_patronymic = document.getElementById('child_patronymic').value.trim();
   const kindergarten_id = document.getElementById('kindergarten_id').value;
   const appt_date = document.getElementById('appt_date').value;
   const errEl = document.getElementById('form-error');
   errEl.textContent = '';
 
   if (!surname || !name || !patronymic)
-    return errEl.textContent = 'Soyadı, adı və ata adını daxil edin';
+    return errEl.textContent = 'Valideynin soyadı, adı və ata adını daxil edin';
   if (!phone)
     return errEl.textContent = 'Əlaqə nömrəsini daxil edin';
+  if (!child_surname || !child_name || !child_patronymic)
+    return errEl.textContent = 'Övladın soyadı, adı və ata adını daxil edin';
   if (!kindergarten_id)
     return errEl.textContent = 'Bağça seçin';
   if (!appt_date)
@@ -314,7 +343,7 @@ async function submitForm() {
     const r = await fetch('/api/register', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ surname, name, patronymic, phone, kindergarten_id, appt_date, appt_hour: selectedHour })
+      body: JSON.stringify({ surname, name, patronymic, phone, child_surname, child_name, child_patronymic, kindergarten_id, appt_date, appt_hour: selectedHour })
     });
     const d = await r.json();
 
