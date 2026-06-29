@@ -31,7 +31,23 @@ function initSchema() {
       kindergarten_id  INTEGER NOT NULL,
       pin_code         TEXT    NOT NULL UNIQUE,
       is_used          INTEGER NOT NULL DEFAULT 0,
+      valid_date       TEXT,
+      valid_hour_start INTEGER,
+      valid_hour_end   INTEGER,
       created_at       TEXT    NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (kindergarten_id) REFERENCES kindergartens(id)
+    );
+    CREATE TABLE IF NOT EXISTS registrations (
+      id               INTEGER PRIMARY KEY AUTOINCREMENT,
+      surname          TEXT NOT NULL,
+      name             TEXT NOT NULL,
+      patronymic       TEXT NOT NULL,
+      phone            TEXT NOT NULL,
+      kindergarten_id  INTEGER NOT NULL,
+      appt_date        TEXT NOT NULL,
+      appt_hour        INTEGER NOT NULL,
+      pin_code         TEXT NOT NULL UNIQUE,
+      created_at       TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (kindergarten_id) REFERENCES kindergartens(id)
     );
     CREATE TABLE IF NOT EXISTS survey_responses (
@@ -53,6 +69,24 @@ function initSchema() {
 
   // target sütunu köhnə DB-lərdə olmaya bilər — əlavə et
   try { db.exec('ALTER TABLE kindergartens ADD COLUMN target REAL NOT NULL DEFAULT 2.5'); } catch {}
+  // valid_date, valid_hour_start/end köhnə survey_tokens-də olmaya bilər
+  try { db.exec('ALTER TABLE survey_tokens ADD COLUMN valid_date TEXT'); } catch {}
+  try { db.exec('ALTER TABLE survey_tokens ADD COLUMN valid_hour_start INTEGER'); } catch {}
+  try { db.exec('ALTER TABLE survey_tokens ADD COLUMN valid_hour_end INTEGER'); } catch {}
+  // registrations cədvəli (əgər köhnə DB-dir)
+  db.exec(`CREATE TABLE IF NOT EXISTS registrations (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    surname          TEXT NOT NULL,
+    name             TEXT NOT NULL,
+    patronymic       TEXT NOT NULL,
+    phone            TEXT NOT NULL,
+    kindergarten_id  INTEGER NOT NULL,
+    appt_date        TEXT NOT NULL,
+    appt_hour        INTEGER NOT NULL,
+    pin_code         TEXT NOT NULL UNIQUE,
+    created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (kindergarten_id) REFERENCES kindergartens(id)
+  )`);
 }
 
 module.exports = { getDb };
