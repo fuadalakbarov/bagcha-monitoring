@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const { query, insert, update, count } = require('../db/database');
 
+// ── Slot konfiqurasiyası (11:30 – 14:00, 3 slot) ─────────────────
+// id: appt_hour sahəsində saxlanır (1, 2, 3)
+const SLOTS = {
+  1: { label: '11:30 – 12:20', startH: 11, startM: 30, endH: 12, endM: 20 },
+  2: { label: '12:20 – 13:10', startH: 12, startM: 20, endH: 13, endM: 10 },
+  3: { label: '13:10 – 14:00', startH: 13, startM: 10, endH: 14, endM: 0 },
+};
+const SLOT_IDS = [1, 2, 3];
+
 function generatePin() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -23,9 +32,10 @@ router.post('/register', async (req, res) => {
   if (!appt_date || appt_date < today)
     return res.status(400).json({ error: 'Tarix bugündən az ola bilməz' });
 
-  const hour = parseInt(appt_hour);
-  if (![12, 13].includes(hour))
-    return res.status(400).json({ error: 'Randevu saatı 12:00 və ya 13:00 olmalıdır' });
+  const slotId = parseInt(appt_hour);
+  if (!SLOT_IDS.includes(slotId))
+    return res.status(400).json({ error: 'Düzgün randevu saatı seçin' });
+  const slot = SLOTS[slotId];
 
   try {
     const kgs = await query('kindergartens', { id: `eq.${parseInt(kindergarten_id)}` });
@@ -35,7 +45,7 @@ router.post('/register', async (req, res) => {
     const taken = await count('registrations', {
       kindergarten_id: `eq.${kg.id}`,
       appt_date: `eq.${appt_date}`,
-      appt_hour: `eq.${hour}`
+      appt_hour: `eq.${slotId}`
     });
     if (taken >= 1)
       return res.status(409).json({ error: 'Bu saat artıq tutulub. Başqa saat seçin.' });
@@ -53,20 +63,23 @@ router.post('/register', async (req, res) => {
       phone: phone.trim(),
       child_surname: child_surname.trim(), child_name: child_name.trim(), child_patronymic: child_patronymic.trim(),
       kindergarten_id: kg.id,
-      appt_date, appt_hour: hour, pin_code: pin
+      appt_date, appt_hour: slotId, pin_code: pin
     });
 
+    // valid_hour_start/end sahələrində HHMM formatında saxlayırıq (məs: 1130, 1220)
     await insert('survey_tokens', {
       kindergarten_id: kg.id,
       pin_code: pin,
       is_used: 0,
       valid_date: appt_date,
-      valid_hour_start: hour,
-      valid_hour_end: hour + 1
+      valid_hour_start: slot.startH * 100 + slot.startM,
+      valid_hour_end: slot.endH * 100 + slot.endM
     });
 
     res.json({
-      ok: true, pin, appt_date, appt_hour: hour,
+      ok: true, pin, appt_date,
+      appt_slot: slotId,
+      slot_label: slot.label,
       kindergartenName: kg.name,
       message: `Qeydiyyat tamamlandı. PIN: ${pin}`
     });
@@ -89,8 +102,10 @@ router.get('/register/slots', async (req, res) => {
       select: 'appt_hour'
     });
     const taken = rows.map(r => r.appt_hour);
-    const free = [12, 13].filter(h => !taken.includes(h));
-    res.json({ free });
+    const free = SLOT_IDS
+      .filter(id => !taken.includes(id))
+      .map(id => ({ id, label: SLOTS[id].label }));
+    res.json({ free, all: SLOT_IDS.map(id => ({ id, label: SLOTS[id].label })) });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server xətası' });
@@ -113,14 +128,18 @@ router.get('/verify', async (req, res) => {
     if (token.valid_date) {
       const now = new Date();
       const todayStr = now.toISOString().slice(0, 10);
-      let azHour = now.getUTCHours() + 4;
-      if (azHour >= 24) azHour -= 24;
+      let azH = now.getUTCHours() + 4;
+      if (azH >= 24) azH -= 24;
+      const azM = now.getUTCMinutes();
+      const nowHHMM = azH * 100 + azM; // məs: 1145
+
+      const fmt = (v) => `${String(Math.floor(v/100)).padStart(2,'0')}:${String(v%100).padStart(2,'0')}`;
 
       if (todayStr !== token.valid_date)
         return res.status(403).json({ error: `Bu PIN yalnız ${token.valid_date} tarixində aktivdir` });
-      if (azHour < token.valid_hour_start || azHour >= token.valid_hour_end)
+      if (nowHHMM < token.valid_hour_start || nowHHMM >= token.valid_hour_end)
         return res.status(403).json({
-          error: `Bu PIN yalnız saat ${token.valid_hour_start}:00-${token.valid_hour_end}:00 arasında aktivdir`
+          error: `Bu PIN yalnız saat ${fmt(token.valid_hour_start)} – ${fmt(token.valid_hour_end)} arasında aktivdir`
         });
     }
 
