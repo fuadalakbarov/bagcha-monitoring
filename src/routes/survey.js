@@ -7,15 +7,13 @@ function generatePin() {
 }
 
 // ── POST /api/register ────────────────────────────────────────────
-router.post('/register', async (req, res) => {
-  const { surname, name, patronymic, phone, child_surname, child_name, child_patronymic, kindergarten_id, appt_date, appt_hour } = req.body;
+router.post('/', async (req, res) => {
+  const { surname, name, patronymic, phone, kindergarten_id, appt_date, appt_hour } = req.body;
 
   if (!surname?.trim() || !name?.trim() || !patronymic?.trim())
-    return res.status(400).json({ error: 'Valideynin ad, soyad və ata adı tələb olunur' });
+    return res.status(400).json({ error: 'Ad, soyad və ata adı tələb olunur' });
   if (!phone?.trim())
     return res.status(400).json({ error: 'Əlaqə nömrəsi tələb olunur' });
-  if (!child_surname?.trim() || !child_name?.trim() || !child_patronymic?.trim())
-    return res.status(400).json({ error: 'Övladın ad, soyad və ata adı tələb olunur' });
   if (!kindergarten_id)
     return res.status(400).json({ error: 'Bağça seçilməyib' });
 
@@ -50,9 +48,7 @@ router.post('/register', async (req, res) => {
 
     await insert('registrations', {
       surname: surname.trim(), name: name.trim(), patronymic: patronymic.trim(),
-      phone: phone.trim(),
-      child_surname: child_surname.trim(), child_name: child_name.trim(), child_patronymic: child_patronymic.trim(),
-      kindergarten_id: kg.id,
+      phone: phone.trim(), kindergarten_id: kg.id,
       appt_date, appt_hour: hour, pin_code: pin
     });
 
@@ -77,7 +73,7 @@ router.post('/register', async (req, res) => {
 });
 
 // ── GET /api/register/slots ───────────────────────────────────────
-router.get('/register/slots', async (req, res) => {
+router.get('/slots', async (req, res) => {
   const { date, kindergarten_id } = req.query;
   if (!date || !kindergarten_id)
     return res.status(400).json({ error: 'date və kindergarten_id tələb olunur' });
