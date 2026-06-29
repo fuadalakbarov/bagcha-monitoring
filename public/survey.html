@@ -127,7 +127,7 @@ body{
   padding:0;overflow:hidden;border-radius:14px;
   position:relative;cursor:pointer;margin-bottom:22px;
 }
-#video-section video{width:100%;display:block;max-height:220px;object-fit:cover;}
+#video-section video{width:100%;display:block;max-height:260px;background:#000;border-radius:10px;}
 .play-overlay{
   position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
@@ -270,15 +270,11 @@ textarea:focus{border-color:#1a5c38;}
           <p>Rəyiniz uşaqlarımızın sağlamlığı üçün vacibdir</p>
         </div>
 
-        <div id="video-section" onclick="startVideo()">
-          <video id="intro-video" playsinline preload="auto">
-            <source src="/Woman_speaking_and_pointing_down_202606292200.mp4" type="video/mp4">
+        <div id="video-section">
+          <video id="intro-video" controls playsinline preload="metadata">
+            <source src="/parent2.mp4" type="video/mp4">
+            Brauzeriniz video oynatmağı dəstəkləmir.
           </video>
-          <div class="play-overlay">
-            <div class="play-btn">▶</div>
-            <p>Videoya baxın</p>
-          </div>
-          <button class="skip-btn" onclick="skipVideo(event)">Keç →</button>
         </div>
 
         <span class="pin-label">🔑 PIN kodunuzu daxil edin</span>
