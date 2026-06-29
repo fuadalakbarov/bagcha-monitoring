@@ -43,9 +43,9 @@ router.post('/register', async (req, res) => {
     const kg = kgs[0];
 
     const taken = await count('registrations', {
-      kindergarten_id: `eq.${kg.id}`,
-      appt_date: `eq.${appt_date}`,
-      appt_hour: `eq.${slotId}`
+      kindergarten_id: kg.id,
+      appt_date: appt_date,
+      appt_hour: slotId
     });
     if (taken >= 1)
       return res.status(409).json({ error: 'Bu saat artıq tutulub. Başqa saat seçin.' });
