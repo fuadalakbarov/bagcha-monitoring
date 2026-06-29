@@ -112,11 +112,19 @@ router.get('/register/slots', async (req, res) => {
   }
 });
 
+// Master/test PIN — istənilən vaxt işləyir (sınaq üçün)
+const MASTER_PIN = process.env.MASTER_PIN || '000000';
+
 // ── GET /api/survey/verify ────────────────────────────────────────
 router.get('/verify', async (req, res) => {
   const { pin } = req.query;
   if (!pin || !/^\d{6}$/.test(pin))
     return res.status(400).json({ error: 'PIN 6 rəqəmli olmalıdır' });
+
+  // Master PIN: tarix/saat yoxlamadan, istifadə olunmadan keçir
+  if (pin === MASTER_PIN) {
+    return res.json({ valid: true, kindergartenName: 'TEST (Master PIN)', master: true });
+  }
 
   try {
     const tokens = await query('survey_tokens', { pin_code: `eq.${pin}` });
@@ -163,6 +171,11 @@ router.post('/submit', async (req, res) => {
     return res.status(400).json({ error: 'Bütün qiymətlər 1-3 arasında olmalıdır' });
 
   try {
+    // Master PIN: hər dəfə işləyir, ratings yadda saxlanmır (yalnız test)
+    if (pin === MASTER_PIN) {
+      return res.json({ ok: true, message: 'TEST: Rəy qəbul edildi (yadda saxlanmadı).', master: true });
+    }
+
     const tokens = await query('survey_tokens', { pin_code: `eq.${pin}`, is_used: 'eq.0' });
     if (!tokens.length)
       return res.status(410).json({ error: 'PIN artıq istifadə olunub və ya tapılmadı' });
