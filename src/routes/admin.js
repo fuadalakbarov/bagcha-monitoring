@@ -1,8 +1,9 @@
 const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const { requireAdmin } = require('../middleware/adminAuth');
-const { getDb } = require('../db/database');
+const { query: sbQuery } = require('../db/database');
 const { generatePinsForKindergarten } = require('../utils/pinGenerator');
+let getDb = () => { throw new Error('SQLite not available'); };
 
 // Dashboard məlumatları
 router.get('/dashboard', requireAdmin, (req, res) => {
@@ -58,9 +59,14 @@ router.get('/dashboard', requireAdmin, (req, res) => {
 });
 
 // Bağça siyahısı (PUBLIC — qeydiyyat forması üçün)
-router.get('/kindergartens/public', (req, res) => {
-  const db = getDb();
-  res.json(db.prepare('SELECT id, name, region FROM kindergartens ORDER BY name').all());
+router.get('/kindergartens/public', async (req, res) => {
+  try {
+    const list = await sbQuery('kindergartens', { select: 'id,name,region', order: 'name.asc' });
+    res.json(list);
+  } catch(e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server xətası' });
+  }
 });
 
 // Bağça siyahısı (admin)
