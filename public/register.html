@@ -133,10 +133,12 @@ input::placeholder{color:#aac0b0;}
   <!-- VİDEO -->
   <div style="margin-bottom:24px;">
     <p style="font-size:.78rem;font-weight:700;color:#1a5c38;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding:6px 0 4px;border-bottom:2px solid #d0e8d9;">🎬 Qeydiyyat təlimatı</p>
-    <video controls style="width:100%;border-radius:12px;background:#000;max-height:260px;">
-      <source src="/Qeydiyyat videosu.mp4" type="video/mp4">
-      Brauzeriniz video dəstəkləmir.
-    </video>
+    <div style="width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;overflow:hidden;">
+      <video controls style="width:100%;height:100%;display:block;object-fit:contain;background:#000;">
+        <source src="/Qeydiyyat videosu.mp4" type="video/mp4">
+        Brauzeriniz video dəstəkləmir.
+      </video>
+    </div>
   </div>
 
   <!-- FORM -->
