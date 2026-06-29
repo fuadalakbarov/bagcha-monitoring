@@ -57,7 +57,13 @@ router.get('/dashboard', requireAdmin, (req, res) => {
   res.json({ stats, kindergartens, comments, trend });
 });
 
-// Bağça siyahısı
+// Bağça siyahısı (PUBLIC — qeydiyyat forması üçün)
+router.get('/kindergartens/public', (req, res) => {
+  const db = getDb();
+  res.json(db.prepare('SELECT id, name, region FROM kindergartens ORDER BY name').all());
+});
+
+// Bağça siyahısı (admin)
 router.get('/kindergartens', requireAdmin, (req, res) => {
   const db = getDb();
   res.json(db.prepare('SELECT id, name, region, target FROM kindergartens ORDER BY name').all());
