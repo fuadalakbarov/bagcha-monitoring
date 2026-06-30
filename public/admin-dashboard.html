@@ -414,6 +414,7 @@ tr:hover td{background:#ffffff}
                 <th>Saat</th>
                 <th>PIN</th>
                 <th>Status</th>
+                <th>Əməliyyat</th>
               </tr>
             </thead>
             <tbody id="appt-table"></tbody>
@@ -475,6 +476,38 @@ tr:hover td{background:#ffffff}
           <div class="pin-results" id="pin-results"></div>
         </div>
       </div>
+
+      <div class="card" style="margin-top:18px">
+        <div class="card-head" style="flex-wrap:wrap;gap:12px">
+          <h3>Bütün PIN-lər</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <select id="pins-kg-filter" onchange="renderPinsTable()" style="min-width:160px"><option value="">Bütün bağçalar</option></select>
+            <select id="pins-status-filter" onchange="renderPinsTable()" style="min-width:140px">
+              <option value="">Bütün statuslar</option>
+              <option value="active">Aktiv</option>
+              <option value="used">İstifadə edilib</option>
+            </select>
+            <input type="text" id="pins-search" oninput="renderPinsTable()" placeholder="PIN, ad axtar..." style="min-width:180px">
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>PIN</th>
+                <th>Bağça</th>
+                <th>Region</th>
+                <th>Təyin olunub</th>
+                <th>Tarix</th>
+                <th>Saat aralığı</th>
+                <th>Status</th>
+                <th>Əməliyyat</th>
+              </tr>
+            </thead>
+            <tbody id="pins-table"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- TAB: ŞƏRHLƏR -->
@@ -512,6 +545,62 @@ tr:hover td{background:#ffffff}
   </div>
 </div>
 
+<!-- MODAL: Randevu redaktə -->
+<div class="modal-overlay" id="appt-modal">
+  <div class="modal" style="width:520px">
+    <h3>Randevunu Redaktə Et</h3>
+    <input type="hidden" id="appt-modal-id">
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:0">
+      <div class="field"><label>Valideyn Soyad</label><input type="text" id="appt-surname"></div>
+      <div class="field"><label>Valideyn Ad</label><input type="text" id="appt-name"></div>
+      <div class="field"><label>Ata adı</label><input type="text" id="appt-patronymic"></div>
+    </div>
+    <div class="field"><label>Telefon</label><input type="text" id="appt-phone"></div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:0">
+      <div class="field"><label>Övlad Soyad</label><input type="text" id="appt-child-surname"></div>
+      <div class="field"><label>Övlad Ad</label><input type="text" id="appt-child-name"></div>
+      <div class="field"><label>Ata adı</label><input type="text" id="appt-child-patronymic"></div>
+    </div>
+    <div class="field"><label>Bağça</label><select id="appt-kg-select"></select></div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+      <div class="field"><label>Tarix</label><input type="date" id="appt-date"></div>
+      <div class="field"><label>Saat</label>
+        <select id="appt-hour-select">
+          <option value="1">11:30 – 12:20</option>
+          <option value="2">12:20 – 13:10</option>
+          <option value="3">13:10 – 14:00</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeApptModal()">Ləğv et</button>
+      <button class="btn btn-primary" onclick="saveAppt()">Saxla</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PIN redaktə -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal">
+    <h3>PIN-i Redaktə Et</h3>
+    <input type="hidden" id="pin-modal-id">
+    <div class="field"><label>PIN</label><input type="text" id="pin-modal-code" disabled></div>
+    <div class="field"><label>Bağça</label><select id="pin-modal-kg"></select></div>
+    <div class="field"><label>Etibarlılıq tarixi</label><input type="date" id="pin-modal-date"></div>
+    <div class="form-row" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+      <div class="field"><label>Başlanğıc saat (məs: 1130)</label><input type="number" id="pin-modal-start" placeholder="1130"></div>
+      <div class="field"><label>Bitmə saat (məs: 1220)</label><input type="number" id="pin-modal-end" placeholder="1220"></div>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" id="pin-modal-used" style="width:auto;display:inline-block"> İstifadə edilib</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closePinModal()">Ləğv et</button>
+      <button class="btn btn-primary" onclick="savePin()">Saxla</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Admin Təlimat Videosu -->
 <div class="video-modal-overlay" id="video-modal">
   <div class="video-modal-box">
@@ -527,6 +616,7 @@ tr:hover td{background:#ffffff}
 let dash = null;
 let kgList = [];
 let appts = [];
+let pinsData = [];
 
 // ─── TAB ─────────────────────────────────────────────
 const TAB_TITLES = {
@@ -549,16 +639,19 @@ function showTab(name) {
 // ─── LOAD ─────────────────────────────────────────────
 async function refreshAll() {
   try {
-    const [dRes, kRes, rRes] = await Promise.all([
+    const [dRes, kRes, rRes, pRes] = await Promise.all([
       fetch('/api/admin/dashboard'),
       fetch('/api/admin/kindergartens'),
-      fetch('/api/admin/registrations')
+      fetch('/api/admin/registrations'),
+      fetch('/api/admin/pins')
     ]);
     if (dRes.status === 401) { location.href = '/admin'; return; }
     dash = await dRes.json();
     kgList = await kRes.json();
     const rData = await rRes.json();
     appts = rData.registrations || [];
+    const pData = await pRes.json();
+    pinsData = pData.pins || [];
     renderAll();
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
@@ -577,6 +670,7 @@ function renderAll() {
   renderComments();
   renderPinSelect();
   renderAppointments();
+  renderPinsTable();
 }
 
 // ─── Filtr seçimlərini doldur ────────────────────────
@@ -586,6 +680,8 @@ function populateFilters() {
   const apSel = document.getElementById('appt-region-filter');
   if (ovSel && ovSel.options.length<=1) regions.forEach(r=>{ovSel.add(new Option(r,r));});
   if (apSel && apSel.options.length<=1) regions.forEach(r=>{apSel.add(new Option(r,r));});
+  const pinKgSel = document.getElementById('pins-kg-filter');
+  if (pinKgSel && pinKgSel.options.length<=1) kgList.forEach(k=>{pinKgSel.add(new Option(k.name,k.id));});
 }
 
 // ─── KPI ─────────────────────────────────────────────
@@ -799,7 +895,7 @@ function renderAppointments() {
 
   const tb = document.getElementById('appt-table');
   if (!rows.length) {
-    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px">Randevu tapılmadı</td></tr>';
+    tb.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:30px">Randevu tapılmadı</td></tr>';
     return;
   }
   tb.innerHTML = rows.map(a=>`
@@ -813,6 +909,10 @@ function renderAppointments() {
       <td>${esc(a.slot)}</td>
       <td><code style="font-weight:700;letter-spacing:1px">${esc(a.pin)}</code></td>
       <td>${a.used?'<span class="badge badge-ok">Tamamlandı</span>':'<span class="badge badge-warn">Gözləyir</span>'}</td>
+      <td>
+        <button class="btn-icon btn-edit" onclick="openEditAppt(${a.id})" title="Redaktə">Redaktə</button>
+        <button class="btn-icon btn-del" onclick="deleteAppt(${a.id},'${esc(a.parent)}')" title="Sil">Sil</button>
+      </td>
     </tr>`).join('');
 }
 
@@ -824,6 +924,139 @@ function exportAppointments() {
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download='randevular.csv';a.click();
   URL.revokeObjectURL(url);
+}
+
+// ─── RANDEVU MODAL ───────────────────────────────────
+function openEditAppt(id) {
+  const a = appts.find(x=>x.id===id);
+  if (!a) return;
+  document.getElementById('appt-modal-id').value = a.id;
+  document.getElementById('appt-surname').value = a.surname || '';
+  document.getElementById('appt-name').value = a.name || '';
+  document.getElementById('appt-patronymic').value = a.patronymic || '';
+  document.getElementById('appt-phone').value = a.phone || '';
+  document.getElementById('appt-child-surname').value = a.child_surname || '';
+  document.getElementById('appt-child-name').value = a.child_name || '';
+  document.getElementById('appt-child-patronymic').value = a.child_patronymic || '';
+  const kgSel = document.getElementById('appt-kg-select');
+  kgSel.innerHTML = kgList.map(k=>`<option value="${k.id}">${esc(k.name)} — ${esc(k.region)}</option>`).join('');
+  kgSel.value = a.kindergarten_id;
+  document.getElementById('appt-date').value = a.appt_date || '';
+  document.getElementById('appt-hour-select').value = a.appt_hour || '1';
+  document.getElementById('appt-modal').classList.add('open');
+}
+
+function closeApptModal() {
+  document.getElementById('appt-modal').classList.remove('open');
+}
+
+async function saveAppt() {
+  const id = document.getElementById('appt-modal-id').value;
+  const body = {
+    surname: document.getElementById('appt-surname').value.trim(),
+    name: document.getElementById('appt-name').value.trim(),
+    patronymic: document.getElementById('appt-patronymic').value.trim(),
+    phone: document.getElementById('appt-phone').value.trim(),
+    child_surname: document.getElementById('appt-child-surname').value.trim(),
+    child_name: document.getElementById('appt-child-name').value.trim(),
+    child_patronymic: document.getElementById('appt-child-patronymic').value.trim(),
+    kindergarten_id: document.getElementById('appt-kg-select').value,
+    appt_date: document.getElementById('appt-date').value,
+    appt_hour: document.getElementById('appt-hour-select').value
+  };
+  const r = await fetch(`/api/admin/registrations/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d = await r.json();
+  if(!r.ok){alert(d.error||'Xəta');return;}
+  closeApptModal();
+  refreshAll();
+}
+
+async function deleteAppt(id, name) {
+  if(!confirm(`"${name}" üçün randevunu silmək istəyirsiniz?\n\nƏlaqəli PIN də silinəcək!`)) return;
+  const r = await fetch(`/api/admin/registrations/${id}`,{method:'DELETE'});
+  const d = await r.json();
+  if(!r.ok){alert(d.error||'Xəta');return;}
+  refreshAll();
+}
+
+// ─── PIN CƏDVƏLİ ──────────────────────────────────────
+function renderPinsTable() {
+  const kgF = (document.getElementById('pins-kg-filter')||{}).value || '';
+  const statusF = (document.getElementById('pins-status-filter')||{}).value || '';
+  const q = ((document.getElementById('pins-search')||{}).value || '').trim().toLowerCase();
+
+  let rows = pinsData.slice();
+  if (kgF) rows = rows.filter(p=>String(p.kindergarten_id)===String(kgF));
+  if (statusF==='active') rows = rows.filter(p=>!p.is_used);
+  if (statusF==='used') rows = rows.filter(p=>p.is_used);
+  if (q) rows = rows.filter(p=>
+    (p.pin_code+' '+(p.assigned_to||'')+' '+(p.assigned_child||'')+' '+p.kindergarten).toLowerCase().includes(q));
+
+  const tb = document.getElementById('pins-table');
+  if (!tb) return;
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px">PIN tapılmadı</td></tr>';
+    return;
+  }
+  const fmtHHMM = v => v==null ? '—' : `${String(Math.floor(v/100)).padStart(2,'0')}:${String(v%100).padStart(2,'0')}`;
+  tb.innerHTML = rows.map(p=>`
+    <tr>
+      <td><code style="font-weight:700;letter-spacing:1px">${esc(p.pin_code)}</code></td>
+      <td>${esc(p.kindergarten)}</td>
+      <td>${esc(p.region)}</td>
+      <td>${p.assigned_to ? `${esc(p.assigned_to)}<br><span style="color:var(--muted);font-size:.78rem">${esc(p.assigned_child||'')}</span>` : '<span style="color:#bbb">Təyin olunmayıb</span>'}</td>
+      <td>${esc(p.valid_date||'—')}</td>
+      <td>${p.valid_hour_start!=null ? fmtHHMM(p.valid_hour_start)+' – '+fmtHHMM(p.valid_hour_end) : '—'}</td>
+      <td>${p.is_used?'<span class="badge badge-ok">İstifadə edilib</span>':'<span class="badge badge-warn">Aktiv</span>'}</td>
+      <td>
+        <button class="btn-icon btn-edit" onclick="openEditPin(${p.id})" title="Redaktə">Redaktə</button>
+        <button class="btn-icon btn-del" onclick="deletePin(${p.id},'${esc(p.pin_code)}')" title="Sil">Sil</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ─── PIN MODAL ────────────────────────────────────────
+function openEditPin(id) {
+  const p = pinsData.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('pin-modal-id').value = p.id;
+  document.getElementById('pin-modal-code').value = p.pin_code;
+  const kgSel = document.getElementById('pin-modal-kg');
+  kgSel.innerHTML = kgList.map(k=>`<option value="${k.id}">${esc(k.name)} — ${esc(k.region)}</option>`).join('');
+  kgSel.value = p.kindergarten_id;
+  document.getElementById('pin-modal-date').value = p.valid_date || '';
+  document.getElementById('pin-modal-start').value = p.valid_hour_start ?? '';
+  document.getElementById('pin-modal-end').value = p.valid_hour_end ?? '';
+  document.getElementById('pin-modal-used').checked = !!p.is_used;
+  document.getElementById('pin-modal').classList.add('open');
+}
+
+function closePinModal() {
+  document.getElementById('pin-modal').classList.remove('open');
+}
+
+async function savePin() {
+  const id = document.getElementById('pin-modal-id').value;
+  const body = {
+    kindergarten_id: document.getElementById('pin-modal-kg').value,
+    valid_date: document.getElementById('pin-modal-date').value || null,
+    valid_hour_start: document.getElementById('pin-modal-start').value,
+    valid_hour_end: document.getElementById('pin-modal-end').value,
+    is_used: document.getElementById('pin-modal-used').checked
+  };
+  const r = await fetch(`/api/admin/pins/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d = await r.json();
+  if(!r.ok){alert(d.error||'Xəta');return;}
+  closePinModal();
+  refreshAll();
+}
+
+async function deletePin(id, pin) {
+  if(!confirm(`${pin} PIN-ini silmək istəyirsiniz?`)) return;
+  const r = await fetch(`/api/admin/pins/${id}`,{method:'DELETE'});
+  const d = await r.json();
+  if(!r.ok){alert(d.error||'Xəta');return;}
+  refreshAll();
 }
 
 // ─── COMMENTS ────────────────────────────────────────
