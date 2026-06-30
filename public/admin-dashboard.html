@@ -652,7 +652,6 @@ async function refreshAll() {
     renderAll();
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
-    if (!window.__tutorialShown) { window.__tutorialShown = true; openTutorial(); }
   } catch(e) {
     document.getElementById('loading').textContent = 'Xəta baş verdi.';
   }
