@@ -3,45 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Giriş</title>
+<title>Admin Giriş — Qidalanma Monitorinqi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#1F3D33,#2d5a45);
-  display:flex;align-items:center;justify-content:center;min-height:100vh}
-.card{background:#FAF6EF;border-radius:20px;padding:44px 40px;
-  box-shadow:0 8px 40px rgba(0,0,0,.3);width:100%;max-width:400px}
-.icon{text-align:center;font-size:3rem;margin-bottom:20px}
-h1{color:#1F3D33;font-size:1.3rem;text-align:center;margin-bottom:6px}
-.sub{color:#5c6b62;font-size:.85rem;text-align:center;margin-bottom:28px}
-label{display:block;color:#2B2823;font-weight:600;font-size:.9rem;margin-bottom:6px}
-input{width:100%;padding:13px 14px;border:2px solid #d1dbd4;border-radius:10px;
-  font-size:1rem;outline:none;transition:.2s}
-input:focus{border-color:#1F3D33}
-.btn{width:100%;padding:14px;background:#1F3D33;color:#FAF6EF;border:none;
-  border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:16px;transition:.2s}
-.btn:hover{background:#2d5a45}
-.btn:disabled{background:#9ab8a8;cursor:not-allowed}
-.error{color:#B23A33;font-size:.88rem;margin-top:10px;text-align:center}
+  :root{
+    --indigo-900:#1e1b4b;--indigo-700:#3730a3;--indigo-600:#4f46e5;--indigo-500:#6366f1;
+    --violet-500:#8b5cf6;--violet-400:#a78bfa;--sky-400:#38bdf8;--cyan-300:#67e8f9;
+    --white:#fff;--slate-50:#f8fafc;--slate-200:#e2e8f0;
+    --ink-900:#0f172a;--ink-500:#64748b;
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--white);
+    min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px;
+    background:
+      radial-gradient(900px 600px at 12% 0%, rgba(56,189,248,.22), transparent 55%),
+      radial-gradient(800px 700px at 92% 100%, rgba(139,92,246,.34), transparent 55%),
+      linear-gradient(155deg,#1e1b4b 0%,#312e81 45%,#4338ca 100%);
+    background-attachment:fixed;position:relative;overflow:hidden;
+  }
+  .orb{position:fixed;border-radius:50%;filter:blur(60px);opacity:.5;z-index:0;pointer-events:none}
+  .orb-1{width:300px;height:300px;background:#38bdf8;top:-90px;left:-70px;animation:f1 14s var(--ease) infinite}
+  .orb-2{width:340px;height:340px;background:#a78bfa;bottom:-120px;right:-80px;animation:f2 18s var(--ease) infinite}
+  @keyframes f1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
+  @keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,-30px)}}
+
+  .card{
+    position:relative;z-index:1;width:100%;max-width:420px;
+    background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18);
+    border-radius:28px;padding:44px 38px;
+    -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    box-shadow:0 24px 70px -15px rgba(30,27,75,.6),inset 0 1px 0 rgba(255,255,255,.15);
+    text-align:center;
+  }
+  .lock{
+    width:72px;height:72px;margin:0 auto 22px;display:grid;place-items:center;
+    background:linear-gradient(145deg,#38bdf8,#8b5cf6);border-radius:20px;
+    box-shadow:0 12px 30px rgba(139,92,246,.45),inset 0 2px 4px rgba(255,255,255,.3);
+    transform:rotate(-4deg);
+  }
+  .lock svg{width:34px;height:34px;color:#fff;transform:rotate(4deg)}
+
+  h1{font-family:'Sora',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-.01em;
+    background:linear-gradient(120deg,#fff 30%,#c7d2fe 70%,#a5f3fc);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .sub{color:rgba(199,210,254,.8);font-size:.9rem;margin:8px 0 28px}
+
+  .field{text-align:left;margin-bottom:6px}
+  label{display:block;color:#e0e7ff;font-weight:700;font-size:.78rem;
+    text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+  .input-wrap{position:relative}
+  input{
+    width:100%;padding:14px 46px 14px 16px;border:2px solid rgba(255,255,255,.2);
+    border-radius:14px;font-size:1rem;outline:none;transition:.2s;font-family:inherit;
+    background:rgba(255,255,255,.95);color:var(--ink-900);
+  }
+  input:focus{border-color:var(--cyan-300);box-shadow:0 0 0 4px rgba(103,232,249,.2)}
+  input::placeholder{color:#94a3b8}
+  .toggle{
+    position:absolute;right:6px;top:50%;transform:translateY(-50%);
+    background:none;border:none;cursor:pointer;color:#64748b;padding:8px;
+    display:grid;place-items:center;border-radius:8px;
+  }
+  .toggle:hover{color:var(--indigo-600);background:#eef2ff}
+  .toggle svg{width:20px;height:20px}
+
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    width:100%;min-height:54px;margin-top:20px;border:none;border-radius:14px;
+    font-size:1.04rem;font-weight:700;cursor:pointer;font-family:inherit;color:#fff;
+    background:linear-gradient(135deg,#4f46e5,#7c3aed,#8b5cf6);background-size:200% 200%;
+    box-shadow:0 10px 30px rgba(99,102,241,.45);transition:.2s;
+  }
+  .btn svg{width:19px;height:19px}
+  .btn:hover:not(:disabled){background-position:100% 0;transform:translateY(-2px);
+    box-shadow:0 16px 38px rgba(124,58,237,.55)}
+  .btn:disabled{opacity:.7;cursor:not-allowed}
+  .btn:focus-visible{outline:3px solid var(--violet-400);outline-offset:3px}
+
+  .error{color:#fecaca;font-size:.86rem;margin-top:12px;min-height:1.2em;font-weight:600}
+
+  .back{
+    display:inline-flex;align-items:center;gap:6px;margin-top:22px;
+    color:rgba(199,210,254,.7);font-size:.84rem;font-weight:600;text-decoration:none;transition:.15s
+  }
+  .back:hover{color:var(--cyan-300)}
+  .back svg{width:15px;height:15px}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="icon">🔐</div>
-  <h1>Admin Paneli</h1>
-  <p class="sub">Bağçada Qidalanma Monitorinq Sistemi</p>
-  <label for="pwd">Şifrə</label>
-  <input type="password" id="pwd" placeholder="Admin şifrəsini daxil edin"
-         onkeydown="if(event.key==='Enter')login()">
-  <div class="error" id="err"></div>
-  <button class="btn" id="btn" onclick="login()">Daxil ol</button>
-</div>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="card">
+    <div class="lock" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+
+    <h1>Admin Paneli</h1>
+    <p class="sub">Bağçada Qidalanma Monitorinq Sistemi</p>
+
+    <div class="field">
+      <label for="pwd">Şifrə</label>
+      <div class="input-wrap">
+        <input type="password" id="pwd" placeholder="Admin şifrəsini daxil edin"
+               autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+        <button type="button" class="toggle" id="toggle" onclick="togglePwd()" aria-label="Şifrəni göstər">
+          <svg id="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="error" id="err"></div>
+
+    <button class="btn" id="btn" onclick="login()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>
+      </svg>
+      Daxil ol
+    </button>
+
+    <a href="/" class="back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+      Ana səhifəyə qayıt
+    </a>
+  </div>
+
 <script>
+function togglePwd() {
+  const inp = document.getElementById('pwd');
+  const eye = document.getElementById('eye');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    eye.innerHTML = '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.5 13.5 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>';
+  } else {
+    inp.type = 'password';
+    eye.innerHTML = '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
 async function login() {
   const pwd = document.getElementById('pwd').value;
   const btn = document.getElementById('btn');
   const err = document.getElementById('err');
   if (!pwd) { err.textContent = 'Şifrəni daxil edin'; return; }
-  btn.disabled = true; btn.textContent = 'Yoxlanılır...';
+  btn.disabled = true; btn.innerHTML = 'Yoxlanılır...';
   try {
     const r = await fetch('/api/auth/login', {
       method: 'POST',
@@ -52,11 +169,13 @@ async function login() {
     else {
       const d = await r.json();
       err.textContent = d.error || 'Şifrə yanlışdır';
-      btn.disabled = false; btn.textContent = 'Daxil ol';
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Daxil ol';
     }
   } catch {
     err.textContent = 'Şəbəkə xətası';
-    btn.disabled = false; btn.textContent = 'Daxil ol';
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>Daxil ol';
   }
 }
 </script>
