@@ -51,4 +51,12 @@ async function count(table, match) {
   return parseInt(range?.split('/')[1] || '0');
 }
 
-module.exports = { query, insert, update, count };
+async function del(table, match) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/${table}`);
+  Object.entries(match).forEach(([k, v]) => url.searchParams.set(k, `eq.${v}`));
+  const r = await fetch(url, { method: 'DELETE', headers: getHeaders() });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json().catch(() => []);
+}
+
+module.exports = { query, insert, update, count, del };
