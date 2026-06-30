@@ -4,86 +4,99 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Randevu Qeydiyyatı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
+:root{
+  --indigo-900:#1e1b4b; --indigo-700:#3730a3; --indigo-600:#4f46e5; --indigo-500:#6366f1;
+  --violet-500:#8b5cf6; --violet-400:#a78bfa; --sky-400:#38bdf8; --cyan-300:#67e8f9;
+  --white:#fff; --slate-50:#f8fafc; --slate-100:#f1f5f9; --slate-200:#e2e8f0;
+  --ink-900:#0f172a; --ink-700:#334155; --ink-500:#64748b;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family:'Segoe UI',sans-serif;
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
   background:
-    radial-gradient(circle at 15% 20%, rgba(94,201,138,.10) 0%, transparent 35%),
-    radial-gradient(circle at 85% 75%, rgba(94,201,138,.08) 0%, transparent 40%),
-    linear-gradient(160deg, #0a2419 0%, #0d2b20 45%, #103325 100%);
+    radial-gradient(900px 600px at 10% 0%, rgba(56,189,248,.22), transparent 55%),
+    radial-gradient(800px 700px at 95% 100%, rgba(139,92,246,.32), transparent 55%),
+    linear-gradient(155deg, #1e1b4b 0%, #312e81 45%, #4338ca 100%);
   background-attachment:fixed;
   min-height:100vh;
   display:flex;flex-direction:column;
   align-items:center;justify-content:flex-start;
-  padding:28px 16px 48px;
+  padding:28px 16px 48px;color:var(--white);
 }
 
 /* Header */
-.site-header{
-  text-align:center;color:#FAF6EF;margin-bottom:24px;width:100%;max-width:600px;
-}
+.site-header{text-align:center;color:#fff;margin-bottom:24px;width:100%;max-width:600px;}
 .back-link{
   display:inline-flex;align-items:center;gap:6px;
-  color:rgba(255,255,255,.55);font-size:.82rem;text-decoration:none;
-  margin-bottom:14px;transition:.15s;
+  color:rgba(199,210,254,.75);font-size:.84rem;font-weight:600;text-decoration:none;
+  margin-bottom:16px;transition:.15s;padding:6px 12px;border-radius:10px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
 }
-.back-link:hover{color:#5ec98a;}
+.back-link:hover{color:var(--cyan-300);background:rgba(255,255,255,.12);}
+.back-link:hover{color:var(--cyan-300);}
 .region-badge{
-  display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
-  border-radius:50px;padding:5px 16px;font-size:.75rem;letter-spacing:.05em;
-  text-transform:uppercase;color:#b8d4c0;margin-bottom:8px;
+  display:inline-block;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+  border-radius:50px;padding:5px 16px;font-size:.75rem;letter-spacing:.08em;font-weight:700;
+  text-transform:uppercase;color:var(--cyan-300);margin-bottom:8px;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
 }
-.site-header h2{font-size:clamp(1rem,4vw,1.4rem);font-weight:700;color:#fff;line-height:1.35;}
-.divider{width:40px;height:3px;background:#5ec98a;border-radius:4px;margin:10px auto 0;}
+.site-header h2{font-family:'Sora',sans-serif;font-size:clamp(1.1rem,4vw,1.5rem);font-weight:800;
+  line-height:1.25;letter-spacing:-.01em;
+  background:linear-gradient(120deg,#fff 30%,#c7d2fe 70%,#a5f3fc);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.divider{width:46px;height:3px;background:linear-gradient(90deg,#38bdf8,#8b5cf6);border-radius:4px;margin:12px auto 0;}
 
 /* Card */
 .card{
-  background:#fdfaf4;border-radius:20px;padding:36px 34px;
-  box-shadow:0 12px 48px rgba(0,0,0,.3);width:100%;max-width:600px;
+  background:#fff;border-radius:24px;padding:36px 34px;
+  box-shadow:0 24px 70px -15px rgba(79,70,229,.45);width:100%;max-width:600px;
+  position:relative;overflow:hidden;
 }
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,#38bdf8,#6366f1,#8b5cf6);}
 .card-header{text-align:center;margin-bottom:26px;}
 .icon-wrap{
-  width:54px;height:54px;background:#e8f5ee;border-radius:50%;
+  width:64px;height:64px;background:linear-gradient(145deg,#38bdf8,#8b5cf6);border-radius:20px;
   display:flex;align-items:center;justify-content:center;
-  margin:0 auto 12px;font-size:1.5rem;
+  margin:0 auto 14px;color:#fff;transform:rotate(-3deg);
+  box-shadow:0 12px 30px rgba(139,92,246,.4),inset 0 2px 4px rgba(255,255,255,.3);
 }
-.card-header h1{color:#0f2e1e;font-size:1.2rem;font-weight:700;line-height:1.35;font-family:Georgia,serif;}
-.card-header p{color:#5a7a65;font-size:.84rem;margin-top:5px;}
+.icon-wrap svg{width:30px;height:30px;transform:rotate(3deg);}
+.card-header h1{color:var(--ink-900);font-size:1.35rem;font-weight:700;line-height:1.3;font-family:'Sora',sans-serif;}
+.card-header p{color:var(--ink-500);font-size:.88rem;margin-top:6px;}
 
 /* Təlimat videosu */
 .video-box{
-  margin:0 0 24px;border-radius:14px;overflow:hidden;
-  background:#000;border:1px solid #d0e4d8;
-  box-shadow:0 4px 18px rgba(15,46,30,.12);
+  margin:0 0 24px;border-radius:16px;overflow:hidden;
+  background:#000;border:1px solid var(--slate-200);
+  box-shadow:0 6px 22px rgba(79,70,229,.18);
   text-align:center;
 }
-.video-box video{
-  width:100%;
-  max-width:100%;
-  height:auto;
-  max-height:340px;
-  display:block;
-  margin:0 auto;
-  background:#000;
-  object-fit:contain;
-}
+.video-box video{width:100%;max-width:100%;height:auto;max-height:340px;display:block;margin:0 auto;background:#000;object-fit:contain;}
 .video-caption{
-  background:#e8f5ee;color:#1a5c38;font-size:.8rem;font-weight:600;
-  text-align:center;padding:9px;letter-spacing:.02em;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  background:#eef2ff;color:var(--indigo-600);font-size:.82rem;font-weight:700;
+  text-align:center;padding:11px;letter-spacing:.02em;
 }
+.cap-ico{width:15px;height:15px;flex-shrink:0;}
 
 /* Form */
 .field{margin-bottom:16px;}
-label{display:block;color:#1a3d2b;font-weight:600;font-size:.82rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+label{display:block;color:var(--ink-700);font-weight:700;font-size:.78rem;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em;}
 input,select{
-  width:100%;padding:11px 14px;border:2px solid #c8ddd0;border-radius:11px;
-  font-size:.93rem;color:#0f2e1e;background:#fff;outline:none;
+  width:100%;padding:13px 15px;border:2px solid var(--slate-200);border-radius:13px;
+  font-size:.95rem;color:var(--ink-900);background:#fff;outline:none;
   font-family:inherit;transition:.2s;
   appearance:none;-webkit-appearance:none;
 }
-input:focus,select:focus{border-color:#1a5c38;}
-input::placeholder{color:#aac0b0;}
+input:focus,select:focus{border-color:var(--indigo-500);box-shadow:0 0 0 4px rgba(99,102,241,.12);}
+input[type=date]::-webkit-calendar-picker-indicator{cursor:pointer;filter:invert(35%) sepia(85%) saturate(2000%) hue-rotate(230deg);}
+.field{position:relative;}
+input::placeholder{color:#aab4c4;}
 
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:420px){.row{grid-template-columns:1fr;}}
@@ -91,81 +104,103 @@ input::placeholder{color:#aac0b0;}
 /* Saat sechimi */
 .slots-wrap{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
 .slot-btn{
-  width:100%;padding:14px 12px;border:2px solid #c8ddd0;border-radius:11px;
-  text-align:center;cursor:pointer;background:#f5fbf7;
-  color:#4a7a5a;font-size:.95rem;font-weight:600;transition:.2s;
+  width:100%;padding:15px 12px;border:2px solid var(--slate-200);border-radius:13px;
+  text-align:center;cursor:pointer;background:var(--slate-50);
+  color:var(--indigo-600);font-size:.96rem;font-weight:700;transition:.2s;
   user-select:none;
 }
-.slot-btn:hover{border-color:#4a9e6a;background:#edf8f1;}
-.slot-btn.selected{border-color:#1a5c38;background:#1a5c38;color:#e8f5ee;}
-.slot-btn.disabled{opacity:.4;cursor:not-allowed;background:#f0f0f0;color:#999;border-color:#ddd;}
-.slot-note{font-size:.75rem;color:#7a9a80;margin-top:6px;}
+.slot-btn:hover{border-color:var(--violet-400);background:#eef2ff;transform:translateY(-1px);}
+.slot-btn.selected{border-color:var(--indigo-600);background:linear-gradient(135deg,#4f46e5,#8b5cf6);color:#fff;box-shadow:0 10px 26px rgba(99,102,241,.45);transform:translateY(-1px);}
+.slot-btn.disabled{opacity:.4;cursor:not-allowed;background:#f1f5f9;color:#94a3b8;border-color:#e2e8f0;}
+.slot-note{font-size:.76rem;color:#8a94a6;margin-top:7px;}
 
-.divider-hr{border:none;border-top:1px solid #dde8e2;margin:20px 0;}
+.divider-hr{border:none;border-top:1px dashed var(--slate-200);margin:26px 0;}
 .section-title{
-  font-size:.78rem;font-weight:700;color:#1a5c38;text-transform:uppercase;
-  letter-spacing:.07em;margin-bottom:14px;padding-bottom:6px;
-  border-bottom:2px solid #e0f0e8;
+  display:flex;align-items:center;gap:10px;
+  font-size:.82rem;font-weight:800;color:var(--indigo-700);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:16px;padding-bottom:10px;
+  border-bottom:2px solid #e0e7ff;
 }
+.sec-ico{
+  width:30px;height:30px;flex-shrink:0;border-radius:9px;
+  display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  box-shadow:0 4px 12px rgba(99,102,241,.35);
+}
+.sec-ico svg{width:17px;height:17px;}
 
 /* Axtarışlı bağça seçimi */
 .combo{position:relative;}
 .combo-list{
   position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:50;
-  background:#fff;border:2px solid #c8ddd0;border-radius:11px;
+  background:#fff;border:2px solid var(--slate-200);border-radius:13px;
   max-height:240px;overflow-y:auto;display:none;
-  box-shadow:0 8px 24px rgba(15,46,30,.15);
+  box-shadow:0 12px 30px rgba(79,70,229,.2);
 }
 .combo-list.open{display:block;}
 .combo-item{
-  padding:10px 14px;font-size:.88rem;color:#1a3d2b;cursor:pointer;
-  border-bottom:1px solid #f0f5f2;line-height:1.4;
+  padding:11px 15px;font-size:.9rem;color:var(--ink-700);cursor:pointer;
+  border-bottom:1px solid var(--slate-100);line-height:1.4;
 }
 .combo-item:last-child{border-bottom:none;}
-.combo-item:hover,.combo-item.active{background:#e8f5ee;color:#0f3d26;}
-.combo-item .hl{background:#fff3a0;font-weight:700;border-radius:2px;}
-.combo-empty{padding:12px 14px;font-size:.84rem;color:#999;text-align:center;}
-#kg-search.has-value{border-color:#1a5c38;background:#f5fbf7;font-weight:600;}
+.combo-item:hover,.combo-item.active{background:#eef2ff;color:var(--indigo-700);}
+.combo-item .hl{background:#fde68a;font-weight:700;border-radius:2px;}
+.combo-empty{padding:13px 15px;font-size:.85rem;color:#94a3b8;text-align:center;}
+#kg-search.has-value{border-color:var(--indigo-500);background:#f5f3ff;font-weight:600;}
 
 /* Düymə */
 .btn{
-  width:100%;padding:13px;border:none;border-radius:11px;font-size:.97rem;
-  font-weight:700;cursor:pointer;transition:.2s;
-  background:#1a5c38;color:#e8f5ee;letter-spacing:.02em;margin-top:4px;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;min-height:56px;padding:15px;border:none;border-radius:14px;font-size:1.04rem;
+  font-weight:700;cursor:pointer;transition:.2s;font-family:inherit;
+  background:linear-gradient(135deg,#4f46e5,#7c3aed,#8b5cf6);background-size:200% 200%;
+  color:#fff;letter-spacing:.02em;margin-top:8px;
+  box-shadow:0 10px 30px rgba(99,102,241,.4);
 }
-.btn:hover{background:#0f3d26;}
-.btn:disabled{background:#7aab8a;cursor:not-allowed;}
+.btn-ico{width:20px;height:20px;flex-shrink:0;}
+.btn:focus-visible{outline:3px solid var(--violet-400);outline-offset:3px;}
+.btn:hover{background-position:100% 0;transform:translateY(-2px);box-shadow:0 16px 38px rgba(124,58,237,.5);}
+.btn:disabled{background:#a5b4fc;cursor:not-allowed;transform:none;box-shadow:none;}
 
-.error{color:#B23A33;font-size:.82rem;margin-top:8px;text-align:center;}
+.error{color:#dc2626;font-size:.84rem;margin-top:10px;text-align:center;font-weight:600;}
 
 /* Uğur ekranı */
 #success-section{display:none;text-align:center;padding:8px 0;}
-.success-icon{font-size:3.5rem;margin-bottom:14px;}
-#success-section h2{color:#0f2e1e;font-family:Georgia,serif;font-size:1.2rem;margin-bottom:10px;}
-#success-section p{color:#5a7a65;font-size:.88rem;line-height:1.65;margin-bottom:8px;}
+.success-check{width:84px;height:84px;margin:0 auto 18px;}
+.success-check svg{width:100%;height:100%;}
+.sc-circle{stroke:#22c55e;stroke-width:3;stroke-dasharray:151;stroke-dashoffset:151;
+  animation:scCircle .6s var(--ease, ease-out) forwards;}
+.sc-check{stroke:#22c55e;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:48;stroke-dashoffset:48;animation:scCheck .35s .5s ease-out forwards;}
+@keyframes scCircle{to{stroke-dashoffset:0}}
+@keyframes scCheck{to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.sc-circle,.sc-check{animation:none;stroke-dashoffset:0}}
+#success-section h2{color:var(--ink-900);font-family:'Sora',sans-serif;font-size:1.4rem;margin-bottom:10px;}
+#success-section p{color:var(--ink-500);font-size:.9rem;line-height:1.65;margin-bottom:8px;}
 .pin-display{
-  font-size:2.6rem;font-weight:900;letter-spacing:.18em;color:#1a5c38;
-  font-family:monospace;background:#e8f5ee;padding:14px 20px;
-  border-radius:14px;border:2px solid #a0cdb0;margin:14px 0;display:inline-block;
+  font-size:2.8rem;font-weight:800;letter-spacing:.2em;color:#fff;
+  font-family:'Sora',monospace;background:linear-gradient(135deg,#4f46e5,#8b5cf6);
+  padding:16px 24px;border-radius:16px;margin:16px 0;display:inline-block;
+  box-shadow:0 14px 36px rgba(99,102,241,.45);
 }
 .pin-info{
-  background:#fff8e1;border:1px solid #f0c040;border-radius:10px;
-  padding:12px 16px;font-size:.84rem;color:#7a5500;line-height:1.6;margin-top:12px;
+  background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;
+  padding:13px 17px;font-size:.85rem;color:#92660a;line-height:1.6;margin-top:14px;
 }
-.pin-info strong{color:#5a3d00;}
+.pin-info strong{color:#713f12;}
 .back-home{
   display:inline-block;margin-top:18px;text-decoration:none;
-  color:#1a5c38;font-weight:600;font-size:.88rem;
-  padding:10px 20px;border:2px solid #1a5c38;border-radius:10px;
+  color:var(--indigo-600);font-weight:700;font-size:.9rem;
+  padding:12px 24px;border:2px solid var(--indigo-500);border-radius:13px;
   transition:.15s;
 }
-.back-home:hover{background:#e8f5ee;}
+.back-home:hover{background:#eef2ff;}
 </style>
 </head>
 <body>
 
 <header class="site-header">
-  <a href="/" class="back-link">← Ana səhifəyə qayıt</a><br>
+  <a href="/" class="back-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="m12 19-7-7 7-7M19 12H5"/></svg>Ana səhifəyə qayıt</a>
   <div class="region-badge">Gəncə-Daşkəsən RTİ</div>
   <h2>Yerində Nəzarət Sorğusu<br>Randevu Qeydiyyatı</h2>
   <div class="divider"></div>
@@ -174,7 +209,7 @@ input::placeholder{color:#aac0b0;}
 <div class="card">
   <div id="intro-block">
   <div class="card-header">
-    <div class="icon-wrap">📋</div>
+    <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h4"/></svg></div>
     <h1>Qeydiyyat Forması</h1>
     <p>Bütün xanaları doldurun və randevu saatınızı seçin</p>
   </div>
@@ -185,14 +220,14 @@ input::placeholder{color:#aac0b0;}
       <source src="/Qeydiyyat videosu.mp4" type="video/mp4">
       Brauzeriniz video oynatmağı dəstəkləmir.
     </video>
-    <div class="video-caption">▶️ Qeydiyyat təlimatı — baxmaq üçün oynadın</div>
+    <div class="video-caption"><svg class="cap-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Qeydiyyat təlimatı — baxmaq üçün oynadın</div>
   </div>
   </div>
 
   <!-- FORM -->
   <div id="form-section">
 
-  <div class="section-title">👤 Valideyn məlumatları</div>
+  <div class="section-title"><span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Valideyn məlumatları</div>
 
     <div class="row">
       <div class="field">
@@ -216,7 +251,7 @@ input::placeholder{color:#aac0b0;}
     </div>
 
     <hr class="divider-hr">
-    <div class="section-title">🧒 Övladın məlumatları</div>
+    <div class="section-title"><span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="6" r="3.2"/><path d="M6 21v-2a6 6 0 0 1 12 0v2"/><path d="M9 13.5 12 16l3-2.5"/></svg></span>Övladın məlumatları</div>
 
     <div class="row">
       <div class="field">
@@ -235,7 +270,7 @@ input::placeholder{color:#aac0b0;}
     </div>
 
     <hr class="divider-hr">
-    <div class="section-title">🏫 Bağça və randevu</div>
+    <div class="section-title"><span class="sec-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-5h6v5"/><path d="M9 11h.01M15 11h.01"/></svg></span>Bağça və randevu</div>
 
     <div class="field">
       <label>Şəhər / Rayon</label>
@@ -269,13 +304,13 @@ input::placeholder{color:#aac0b0;}
     </div>
 
     <div class="error" id="form-error"></div>
-    <button class="btn" id="submit-btn" onclick="submitForm()">✅ Qeydiyyatı Tamamla</button>
+    <button class="btn" id="submit-btn" onclick="submitForm()"><svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Qeydiyyatı Tamamla</button>
 
   </div>
 
   <!-- UĞUR -->
   <div id="success-section">
-    <div class="success-icon">🎉</div>
+    <div class="success-check"><svg viewBox="0 0 52 52"><circle class="sc-circle" cx="26" cy="26" r="24" fill="none"/><path class="sc-check" fill="none" d="M14 27l8 8 16-16"/></svg></div>
     <h2>Qeydiyyat Tamamlandı!</h2>
     <p>PIN kodunuz:</p>
     <div class="pin-display" id="result-pin">——</div>
@@ -292,7 +327,7 @@ input::placeholder{color:#aac0b0;}
         <source src="/Man_and_woman_speaking_Azerbaijani_202606292150.mp4" type="video/mp4">
         Brauzeriniz video oynatmağı dəstəkləmir.
       </video>
-      <div class="video-caption">▶️ Valideynlər üçün məlumat videosu</div>
+      <div class="video-caption"><svg class="cap-ico" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Valideynlər üçün məlumat videosu</div>
     </div>
 
     <a href="/survey" class="back-home">🔑 Sorğuya keç</a>
@@ -448,9 +483,9 @@ async function loadSlots() {
     });
 
     if (freeIds.length === 0) {
-      note.textContent = '❌ Bu tarix üçün boş saat yoxdur. Başqa tarix seçin.';
+      note.textContent = 'Bu tarix üçün boş saat yoxdur. Başqa tarix seçin.';note.style.color='#dc2626';
     } else {
-      note.textContent = `✅ ${freeIds.length} boş saat mövcuddur`;
+      note.textContent = `${freeIds.length} boş saat mövcuddur`;note.style.color='#16a34a';
     }
   } catch {
     note.textContent = 'Saatlar yüklənə bilmədi.';
@@ -493,7 +528,7 @@ async function submitForm() {
     return errEl.textContent = 'Randevu saatı seçin';
 
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true; btn.textContent = 'Göndərilir...';
+  btn.disabled = true; btn.innerHTML = 'Göndərilir...';
 
   try {
     const r = await fetch('/api/register', {
@@ -514,11 +549,11 @@ async function submitForm() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       errEl.textContent = d.error || 'Xəta baş verdi';
-      btn.disabled = false; btn.textContent = '✅ Qeydiyyatı Tamamla';
+      btn.disabled = false; btn.innerHTML = '<svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Qeydiyyatı Tamamla';
     }
   } catch {
     errEl.textContent = 'Şəbəkə xətası.';
-    btn.disabled = false; btn.textContent = '✅ Qeydiyyatı Tamamla';
+    btn.disabled = false; btn.innerHTML = '<svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Qeydiyyatı Tamamla';
   }
 }
 
