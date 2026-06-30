@@ -28,8 +28,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   color:#e0e7ff;display:flex;flex-direction:column;
   position:sticky;top:0;height:100vh;
   box-shadow:4px 0 24px rgba(30,27,75,.25);z-index:90;
+  transition:width .22s ease;
 }
-.sb-brand{display:flex;align-items:center;gap:12px;padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar.collapsed{width:80px}
+.sb-brand{display:flex;align-items:center;gap:12px;padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.1);transition:.22s}
+.sidebar.collapsed .sb-brand{padding:22px 0;justify-content:center}
+.sidebar.collapsed .sb-titles{display:none}
 .sb-logo{width:42px;height:42px;flex-shrink:0;border-radius:12px;display:grid;place-items:center;
   background:linear-gradient(145deg,#38bdf8,#8b5cf6);color:#fff;box-shadow:0 6px 18px rgba(139,92,246,.4)}
 .sb-logo svg{width:24px;height:24px}
@@ -45,12 +49,23 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sb-item.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
   box-shadow:0 8px 20px rgba(99,102,241,.4)}
 .sb-item.active svg{opacity:1}
+.sidebar.collapsed .sb-item,.sidebar.collapsed .sb-action{justify-content:center;padding:12px}
+.sidebar.collapsed .sb-item span,.sidebar.collapsed .sb-action span{display:none}
 
 .sb-footer{padding:12px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:3px}
 .sb-action{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;
   cursor:pointer;font-size:.86rem;font-weight:600;color:#a5b4fc;transition:.15s}
 .sb-action svg{width:17px;height:17px;flex-shrink:0}
 .sb-action:hover{background:rgba(255,255,255,.08);color:#fff}
+
+/* SIDEBAR COLLAPSE TOGGLE */
+.sb-collapse-toggle{display:flex;align-items:center;justify-content:center;gap:9px;
+  margin:10px 12px 0;padding:9px;border-radius:10px;cursor:pointer;color:#a5b4fc;
+  border:1px solid rgba(255,255,255,.12);transition:.15s;font-size:.78rem;font-weight:700}
+.sb-collapse-toggle:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.25)}
+.sb-collapse-toggle svg{width:16px;height:16px;flex-shrink:0;transition:transform .22s ease}
+.sidebar.collapsed .sb-collapse-toggle svg{transform:rotate(180deg)}
+@media(max-width:860px){.sb-collapse-toggle{display:none}}
 .sb-logout:hover{background:rgba(239,68,68,.18);color:#fecaca}
 
 /* TOPBAR */
@@ -75,46 +90,66 @@ main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:24px 24px 48px}
 }
 
 /* KPI CARDS */
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
-.kpi{background:var(--card);border-radius:14px;padding:20px 18px;box-shadow:0 1px 6px rgba(0,0,0,.06);position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--green-light)}
-.kpi .num{font-size:2rem;font-weight:800;color:var(--green);line-height:1}
-.kpi .lbl{color:var(--muted);font-size:.8rem;margin-top:6px;font-weight:500}
-.kpi .sub{font-size:.78rem;color:var(--green-light);margin-top:2px;font-weight:600}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:26px}
+.kpi{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 1px 3px rgba(30,27,75,.06),0 1px 2px rgba(30,27,75,.04);
+  position:relative;overflow:hidden;border:1px solid var(--border);transition:.2s;display:flex;flex-direction:column;gap:14px}
+.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(99,102,241,.14);border-color:#c7d2fe}
+.kpi-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 6px 14px rgba(99,102,241,.35)}
+.kpi-icon svg{width:20px;height:20px}
+.kpi:nth-child(2) .kpi-icon{background:linear-gradient(135deg,#0ea5e9,#38bdf8);box-shadow:0 6px 14px rgba(14,165,233,.35)}
+.kpi:nth-child(3) .kpi-icon{background:linear-gradient(135deg,#10b981,#34d399);box-shadow:0 6px 14px rgba(16,185,129,.35)}
+.kpi:nth-child(4) .kpi-icon{background:linear-gradient(135deg,#f59e0b,#fbbf24);box-shadow:0 6px 14px rgba(245,158,11,.35)}
+.kpi:nth-child(5) .kpi-icon{background:linear-gradient(135deg,#ec4899,#f472b6);box-shadow:0 6px 14px rgba(236,72,153,.35)}
+.kpi .num{font-size:1.9rem;font-weight:800;color:var(--text);line-height:1;font-variant-numeric:tabular-nums}
+.kpi .lbl{color:var(--muted);font-size:.8rem;margin-top:5px;font-weight:600}
+.kpi .sub{font-size:.76rem;color:var(--green-light);margin-top:4px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
 
 /* SECTION HEADER */
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;margin-top:8px}
-.sec-head h2{font-size:1rem;font-weight:700;color:var(--green)}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;margin-top:8px}
+.sec-head h2{font-size:1.05rem;font-weight:800;color:var(--text);display:flex;align-items:center;gap:10px;letter-spacing:-.01em}
+.sec-head h2::before{content:'';width:5px;height:20px;border-radius:3px;background:linear-gradient(180deg,#6366f1,#8b5cf6);display:inline-block}
 .sec-head .right{display:flex;gap:8px}
 
 /* CHARTS ROW */
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
 @media(max-width:720px){.charts-row{grid-template-columns:1fr}}
-.chart-card{background:var(--card);border-radius:14px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
-.chart-card h3{font-size:.88rem;font-weight:700;color:var(--green);margin-bottom:14px}
+.chart-card{background:var(--card);border-radius:16px;padding:22px;box-shadow:0 1px 3px rgba(30,27,75,.06),0 1px 2px rgba(30,27,75,.04);
+  border:1px solid var(--border);transition:.2s}
+.chart-card:hover{box-shadow:0 10px 26px rgba(30,27,75,.08)}
+.chart-card h3{font-size:.86rem;font-weight:800;color:var(--text);margin-bottom:2px;letter-spacing:-.01em}
+.chart-card .chart-sub{font-size:.74rem;color:var(--muted);margin-bottom:14px;font-weight:500}
 .chart-wrap{position:relative;height:220px}
 
 /* TABLE */
-.card{background:var(--card);border-radius:14px;padding:0;box-shadow:0 1px 6px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px}
-.card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-head h3{font-size:.9rem;font-weight:700;color:var(--green)}
+.card{background:var(--card);border-radius:16px;padding:0;box-shadow:0 1px 3px rgba(30,27,75,.06),0 1px 2px rgba(30,27,75,.04);
+  overflow:hidden;margin-bottom:20px;border:1px solid var(--border)}
+.card-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,#fafaff,#fff)}
+.card-head h3{font-size:.92rem;font-weight:800;color:var(--text);letter-spacing:-.01em}
 table{width:100%;border-collapse:collapse;font-size:.84rem}
-th{background:#f8fafc;color:var(--green);padding:10px 14px;text-align:left;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
-td{padding:11px 14px;border-bottom:1px solid #f8fafc;vertical-align:middle}
+thead{position:sticky;top:0;z-index:2}
+th{background:#f5f5ff;color:#4338ca;padding:12px 14px;text-align:left;font-weight:700;font-size:.74rem;
+  text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+td{padding:12px 14px;border-bottom:1px solid #f1f1fb;vertical-align:middle;font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#ffffff}
+tbody tr:nth-child(even) td{background:#fbfbff}
+tbody tr{transition:background .12s}
+tbody tr:hover td{background:#eef2ff !important}
 
 /* STATUS BADGE */
-.badge{padding:4px 10px;border-radius:20px;font-size:.76rem;font-weight:700;display:inline-block;white-space:nowrap}
+.badge{padding:5px 11px;border-radius:20px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
 .badge-ok{background:var(--ok-bg);color:var(--ok)}
 .badge-warn{background:var(--warn-bg);color:var(--warn)}
 .badge-alarm{background:var(--alarm-bg);color:var(--alarm)}
 .badge-nd{background:#f0f0f0;color:#888}
 
 /* SCORE */
-.score-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.bar{width:40px;height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;flex-shrink:0}
-.bar-fill{height:100%;border-radius:3px}
+.score-cell{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.score-cell strong{font-variant-numeric:tabular-nums;min-width:28px}
+.bar{width:48px;height:6px;background:#f1f1fb;border-radius:4px;overflow:hidden;flex-shrink:0}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
 
 /* TARGET */
 .target-cell{display:flex;align-items:center;gap:6px}
@@ -123,14 +158,14 @@ tr:hover td{background:#ffffff}
 .below{background:#fdecea;color:#B23A33}
 
 /* BUTTONS */
-.btn{padding:8px 16px;border-radius:9px;font-size:.83rem;font-weight:600;cursor:pointer;border:none;transition:.15s}
-.btn-primary{background:var(--green);color:#fff}
-.btn-primary:hover{background:var(--green-mid)}
-.btn-outline{background:transparent;border:2px solid var(--green);color:var(--green)}
-.btn-outline:hover{background:#eef2ff}
+.btn{padding:9px 17px;border-radius:10px;font-size:.83rem;font-weight:700;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 4px 12px rgba(99,102,241,.32)}
+.btn-primary:hover{box-shadow:0 6px 18px rgba(99,102,241,.42);transform:translateY(-1px)}
+.btn-outline{background:transparent;border:2px solid #c7d2fe;color:#4338ca}
+.btn-outline:hover{background:#eef2ff;border-color:#a5b4fc}
 .btn-danger{background:transparent;border:2px solid #e53935;color:#e53935}
 .btn-danger:hover{background:#fdecea}
-.btn-sm{padding:5px 11px;font-size:.78rem}
+.btn-sm{padding:6px 13px;font-size:.78rem}
 .btn-icon{width:auto;height:32px;padding:0 12px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
   font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:.15s}
 .btn-icon svg{width:14px;height:14px;flex-shrink:0}
@@ -157,10 +192,11 @@ tr:hover td{background:#ffffff}
 .pin-results a:hover{text-decoration:underline}
 
 /* COMMENTS */
-.comment-item{border-left:4px solid var(--accent);padding:10px 14px;margin-bottom:10px;
-  background:#ffffff;border-radius:0 10px 10px 0}
-.comment-meta{font-size:.76rem;color:var(--muted);margin-bottom:4px}
-.comment-text{font-size:.88rem;color:var(--text)}
+.comment-item{border-left:4px solid #8b5cf6;padding:14px 16px;margin-bottom:10px;
+  background:#ffffff;border-radius:0 12px 12px 0;box-shadow:0 1px 3px rgba(30,27,75,.05);transition:.15s}
+.comment-item:hover{box-shadow:0 4px 14px rgba(99,102,241,.12);transform:translateX(2px)}
+.comment-meta{font-size:.74rem;color:#8b5cf6;margin-bottom:5px;font-weight:700}
+.comment-text{font-size:.88rem;color:var(--text);line-height:1.5}
 
 /* WHATSAPP SUPPORT BUTTON */
 .wa-support{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;align-items:center;gap:10px;
@@ -206,7 +242,10 @@ tr:hover td{background:#ffffff}
 }
 
 /* LOADING / EMPTY */
-.loading{text-align:center;padding:48px;color:var(--muted)}
+.loading{text-align:center;padding:64px;color:var(--muted);font-weight:600;font-size:.9rem}
+.loading::before{content:'';display:block;width:34px;height:34px;margin:0 auto 14px;
+  border:3px solid #e0e7ff;border-top-color:#6366f1;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:32px;color:#aaa;font-size:.88rem}
 
 /* TREND badge */
@@ -310,6 +349,11 @@ tr:hover td{background:#ffffff}
       </div>
     </div>
 
+    <div class="sb-collapse-toggle" id="sb-collapse-toggle" onclick="toggleSidebar()" title="Paneli bağla">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/></svg>
+      <span id="sb-collapse-label">Paneli bağla</span>
+    </div>
+
     <nav class="sb-nav">
       <div class="sb-item active" onclick="showTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8" rx="1"/><rect x="12" y="6" width="3" height="12" rx="1"/><rect x="17" y="13" width="3" height="5" rx="1"/></svg><span>İcmal</span></div>
       <div class="sb-item" onclick="showTab('appointments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span>Randevular</span></div>
@@ -319,7 +363,8 @@ tr:hover td{background:#ffffff}
     </nav>
 
     <div class="sb-footer">
-      <div class="sb-action" onclick="openTutorial()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Təlimat</span></div>
+      <div class="sb-action" onclick="openTutorial('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Admin Təlimatı</span></div>
+      <div class="sb-action" onclick="openTutorial('user')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><span>İstifadəçi Təlimatı</span></div>
       <div class="sb-action" onclick="refreshAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg><span>Yenilə</span></div>
       <div class="sb-action sb-logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Çıxış</span></div>
     </div>
@@ -352,17 +397,19 @@ tr:hover td{background:#ffffff}
       <div class="charts-row">
         <div class="chart-card">
           <h3>Bağçalar üzrə Ortalama Bal</h3>
+          <p class="chart-sub">Hər bağçanın 4 göstərici üzrə müqayisəsi (0–3 şkala)</p>
           <div class="chart-wrap"><canvas id="chart-bar"></canvas></div>
         </div>
         <div class="chart-card">
           <h3>Son 7 Günün Trendi</h3>
+          <p class="chart-sub">Gündəlik ortalama bal və cavab sayı</p>
           <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
         </div>
       </div>
 
       <div class="card" style="margin-bottom:20px">
         <div class="card-head"><h3>Region üzrə Müqayisə</h3></div>
-        <div class="chart-wrap" style="padding:16px"><canvas id="chart-region"></canvas></div>
+        <div class="chart-wrap" style="padding:18px;height:260px"><canvas id="chart-region"></canvas></div>
       </div>
 
       <div class="card">
@@ -598,10 +645,10 @@ tr:hover td{background:#ffffff}
 <!-- MODAL: Admin Təlimat Videosu -->
 <div class="video-modal-overlay" id="video-modal">
   <div class="video-modal-box">
-    <span class="video-modal-title">🎬 Admin Təlimatı</span>
+    <span class="video-modal-title" id="video-modal-title">🎬 Admin Təlimatı</span>
     <button class="video-modal-close" onclick="closeTutorial()">✕</button>
     <video id="tutorial-video" controls playsinline>
-      <source src="/admintelimati_vx5T7L8I.mp4" type="video/mp4">
+      <source id="tutorial-video-src" src="/admintelimati_vx5T7L8I.mp4" type="video/mp4">
     </video>
   </div>
 </div>
@@ -614,6 +661,22 @@ let pinsData = [];
 
 const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
 const ICON_DEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+
+// ─── Chart.js qlobal tema ──────────────────────────────
+if (window.Chart) {
+  Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+  Chart.defaults.color = '#64748b';
+  Chart.defaults.plugins.tooltip.backgroundColor = '#1e1b4b';
+  Chart.defaults.plugins.tooltip.titleColor = '#fff';
+  Chart.defaults.plugins.tooltip.bodyColor = '#e0e7ff';
+  Chart.defaults.plugins.tooltip.padding = 11;
+  Chart.defaults.plugins.tooltip.cornerRadius = 10;
+  Chart.defaults.plugins.tooltip.titleFont = { weight: '700', size: 12 };
+  Chart.defaults.plugins.tooltip.bodyFont = { size: 12 };
+  Chart.defaults.plugins.tooltip.boxPadding = 5;
+  Chart.defaults.plugins.tooltip.displayColors = true;
+  Chart.defaults.plugins.tooltip.usePointStyle = true;
+}
 
 // ─── TAB ─────────────────────────────────────────────
 const TAB_TITLES = {
@@ -680,6 +743,13 @@ function populateFilters() {
 }
 
 // ─── KPI ─────────────────────────────────────────────
+const KPI_ICONS = {
+  responses: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+  kg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5"/></svg>',
+  used: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>',
+  active: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3"/></svg>',
+  avg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>'
+};
 function renderKPI() {
   const s = dash.stats;
   const pct = s.total_pins > 0 ? Math.round(s.used_pins / s.total_pins * 100) : 0;
@@ -687,11 +757,11 @@ function renderKPI() {
   const globalAvg = avgAll.length ? (avgAll.reduce((a,k)=>a+k.overall_avg,0)/avgAll.length).toFixed(2) : '—';
 
   document.getElementById('kpi-row').innerHTML = `
-    <div class="kpi"><div class="num">${s.total_responses||0}</div><div class="lbl">Ümumi Cavab</div></div>
-    <div class="kpi"><div class="num">${s.total_kg||0}</div><div class="lbl">Bağça sayı</div></div>
-    <div class="kpi"><div class="num">${s.used_pins||0}</div><div class="lbl">İstifadə edilmiş PIN</div><div class="sub">İştirak: ${pct}%</div></div>
-    <div class="kpi"><div class="num">${s.active_pins||0}</div><div class="lbl">Aktiv PIN</div></div>
-    <div class="kpi"><div class="num">${globalAvg}</div><div class="lbl">Ümumi Ortalama</div><div class="sub">/ 3.0 maksimum</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.responses}</div><div class="num">${s.total_responses||0}</div><div class="lbl">Ümumi Cavab</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.kg}</div><div class="num">${s.total_kg||0}</div><div class="lbl">Bağça sayı</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.used}</div><div class="num">${s.used_pins||0}</div><div class="lbl">İstifadə edilmiş PIN</div><div class="sub">İştirak: ${pct}%</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.active}</div><div class="num">${s.active_pins||0}</div><div class="lbl">Aktiv PIN</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.avg}</div><div class="num">${globalAvg}</div><div class="lbl">Ümumi Ortalama</div><div class="sub">/ 3.0 maksimum</div></div>
   `;
 }
 
@@ -699,7 +769,7 @@ function renderKPI() {
 function scoreCell(val) {
   if (!val) return '<span style="color:#bbb">—</span>';
   const pct = ((val-1)/2)*100;
-  const col = val>=2.5?'#5A8A6B':val>=1.8?'#E8743B':'#B23A33';
+  const col = val>=2.5?'#10b981':val>=1.8?'#f59e0b':'#e53935';
   return `<div class="score-cell"><strong>${val}</strong>
     <div class="bar"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
 }
@@ -779,16 +849,17 @@ function renderCharts() {
     data: {
       labels: kg.map(k=>k.name.length>14?k.name.slice(0,14)+'…':k.name),
       datasets: [
-        { label:'Həcm', data:kg.map(k=>k.avg_volume||0), backgroundColor:'#5A8A6B' },
-        { label:'Keyfiyyət', data:kg.map(k=>k.avg_quality||0), backgroundColor:'#2d5a45' },
-        { label:'Dad', data:kg.map(k=>k.avg_taste||0), backgroundColor:'#E8743B' },
-        { label:'Gigiyena', data:kg.map(k=>k.avg_hygiene||0), backgroundColor:'#1F3D33' },
+        { label:'Həcm', data:kg.map(k=>k.avg_volume||0), backgroundColor:'#6366f1', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
+        { label:'Keyfiyyət', data:kg.map(k=>k.avg_quality||0), backgroundColor:'#8b5cf6', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
+        { label:'Dad', data:kg.map(k=>k.avg_taste||0), backgroundColor:'#f59e0b', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
+        { label:'Gigiyena', data:kg.map(k=>k.avg_hygiene||0), backgroundColor:'#14b8a6', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
       ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      scales:{ y:{ min:0, max:3, ticks:{stepSize:.5}, grid:{color:'#eee'} }, x:{grid:{display:false}} },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11},boxWidth:12}} }
+      scales:{ y:{ min:0, max:3, ticks:{stepSize:.5}, grid:{color:'#eef0fa'}, border:{display:false} },
+               x:{grid:{display:false}, border:{display:false}} },
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:14} } }
     }
   });
 
@@ -803,25 +874,25 @@ function renderCharts() {
       datasets: [{
         label:'Gündəlik ortalama',
         data: trend.length ? trend.map(t=>t.avg_score) : [0],
-        borderColor:'#5A8A6B', backgroundColor:'rgba(90,138,107,.1)',
-        borderWidth:2, tension:.3, fill:true,
-        pointBackgroundColor:'#1F3D33', pointRadius:4
+        borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.12)',
+        borderWidth:2.5, tension:.35, fill:true,
+        pointBackgroundColor:'#6366f1', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6
       },{
         label:'Cavab sayı',
         data: trend.length ? trend.map(t=>t.count) : [0],
-        borderColor:'#E8743B', backgroundColor:'transparent',
-        borderWidth:2, tension:.3, borderDash:[4,3],
-        pointRadius:3, yAxisID:'y2'
+        borderColor:'#f59e0b', backgroundColor:'transparent',
+        borderWidth:2, tension:.35, borderDash:[5,4],
+        pointBackgroundColor:'#f59e0b', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3, yAxisID:'y2'
       }]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
       scales:{
-        y:{ min:1, max:3, position:'left', grid:{color:'#eee'}, ticks:{stepSize:.5} },
-        y2:{ position:'right', grid:{display:false}, ticks:{color:'#E8743B'} },
-        x:{grid:{display:false}}
+        y:{ min:1, max:3, position:'left', grid:{color:'#eef0fa'}, ticks:{stepSize:.5}, border:{display:false} },
+        y2:{ position:'right', grid:{display:false}, ticks:{color:'#f59e0b'}, border:{display:false} },
+        x:{grid:{display:false}, border:{display:false}}
       },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11},boxWidth:12}} }
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:14} } }
     }
   });
 
@@ -851,18 +922,18 @@ function renderRegionChart() {
     data:{
       labels:regions,
       datasets:[
-        { label:'Ortalama bal', data:avgs, backgroundColor:'#6366f1', yAxisID:'y', borderRadius:6 },
-        { label:'İştirakçı sayı', data:parts, backgroundColor:'#a78bfa', yAxisID:'y2', borderRadius:6 }
+        { label:'Ortalama bal', data:avgs, backgroundColor:'#6366f1', yAxisID:'y', borderRadius:7, borderSkipped:false, maxBarThickness:34 },
+        { label:'İştirakçı sayı', data:parts, backgroundColor:'#c4b5fd', yAxisID:'y2', borderRadius:7, borderSkipped:false, maxBarThickness:34 }
       ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
       scales:{
-        y:{ min:0, max:3, position:'left', grid:{color:'#eee'}, ticks:{stepSize:.5}, title:{display:true,text:'Bal'} },
-        y2:{ position:'right', grid:{display:false}, ticks:{color:'#8b5cf6'}, title:{display:true,text:'İştirakçı'} },
-        x:{grid:{display:false}}
+        y:{ min:0, max:3, position:'left', grid:{color:'#eef0fa'}, ticks:{stepSize:.5}, title:{display:true,text:'Bal',font:{weight:'600',size:11}}, border:{display:false} },
+        y2:{ position:'right', grid:{display:false}, ticks:{color:'#8b5cf6'}, title:{display:true,text:'İştirakçı',font:{weight:'600',size:11}}, border:{display:false} },
+        x:{grid:{display:false}, border:{display:false}}
       },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11},boxWidth:12}} }
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:14} } }
     }
   });
 }
@@ -885,10 +956,10 @@ function renderAppointments() {
   const usedCount = appts.filter(a=>a.used).length;
   const kpi = document.getElementById('appt-kpi');
   if (kpi) kpi.innerHTML = `
-    <div class="kpi"><div class="num">${appts.length}</div><div class="lbl">Ümumi randevu</div></div>
-    <div class="kpi"><div class="num">${todayCount}</div><div class="lbl">Bu gün</div></div>
-    <div class="kpi"><div class="num">${usedCount}</div><div class="lbl">Tamamlanmış</div></div>
-    <div class="kpi"><div class="num">${appts.length-usedCount}</div><div class="lbl">Gözləyən</div></div>`;
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.responses}</div><div class="num">${appts.length}</div><div class="lbl">Ümumi randevu</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.kg}</div><div class="num">${todayCount}</div><div class="lbl">Bu gün</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.used}</div><div class="num">${usedCount}</div><div class="lbl">Tamamlanmış</div></div>
+    <div class="kpi"><div class="kpi-icon">${KPI_ICONS.active}</div><div class="num">${appts.length-usedCount}</div><div class="lbl">Gözləyən</div></div>`;
 
   const tb = document.getElementById('appt-table');
   if (!rows.length) {
@@ -1211,8 +1282,16 @@ document.getElementById('kg-modal').addEventListener('click', function(e){
 });
 
 // ─── TƏLİMAT VIDEOSU ─────────────────────────────────────────────
-function openTutorial(){
+const TUTORIAL_VIDEOS = {
+  admin: { src: '/admintelimati_vx5T7L8I.mp4', title: '🎬 Admin Təlimatı' },
+  user:  { src: '/istifadecitelimati_FtiyCJEf.mp4', title: '🎬 İstifadəçi Təlimatı' }
+};
+function openTutorial(type){
+  const cfg = TUTORIAL_VIDEOS[type] || TUTORIAL_VIDEOS.admin;
   const v = document.getElementById('tutorial-video');
+  document.getElementById('tutorial-video-src').src = cfg.src;
+  document.getElementById('video-modal-title').textContent = cfg.title;
+  v.load();
   document.getElementById('video-modal').classList.add('open');
   v.currentTime = 0;
   v.play().catch(()=>{});
@@ -1229,6 +1308,26 @@ document.getElementById('video-modal').addEventListener('click', function(e){
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape') closeTutorial();
 });
+
+// ─── SOL PANELİN BAĞLANMASI/AÇILMASI ──────────────────────────────
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  const collapsed = sb.classList.toggle('collapsed');
+  localStorage.setItem('sb_collapsed', collapsed ? '1' : '0');
+  const toggle = document.getElementById('sb-collapse-toggle');
+  const label = document.getElementById('sb-collapse-label');
+  if (collapsed){
+    label.textContent = 'Aç';
+    toggle.title = 'Paneli aç';
+  } else {
+    label.textContent = 'Paneli bağla';
+    toggle.title = 'Paneli bağla';
+  }
+}
+if (window.innerWidth > 860 && localStorage.getItem('sb_collapsed') === '1') {
+  document.getElementById('sidebar').classList.add('collapsed');
+  document.getElementById('sb-collapse-label').textContent = 'Aç';
+}
 
 refreshAll();
 setInterval(refreshAll, 60000);
