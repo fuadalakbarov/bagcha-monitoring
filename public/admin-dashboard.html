@@ -131,12 +131,14 @@ tr:hover td{background:#ffffff}
 .btn-danger{background:transparent;border:2px solid #e53935;color:#e53935}
 .btn-danger:hover{background:#fdecea}
 .btn-sm{padding:5px 11px;font-size:.78rem}
-.btn-icon{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:.9rem;cursor:pointer;border:none;transition:.15s}
-.btn-edit{background:#eef2ff;color:var(--green)}
+.btn-icon{width:auto;height:32px;padding:0 12px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  font-size:.78rem;font-weight:600;cursor:pointer;border:none;transition:.15s}
+.btn-icon svg{width:14px;height:14px;flex-shrink:0}
+.btn-edit{background:#eef2ff;color:#4338ca}
 .btn-edit:hover{background:#e0e7ff}
 .btn-del{background:#fdecea;color:#B23A33}
 .btn-del:hover{background:#fbd5d4}
+.row-actions{display:flex;gap:6px;flex-wrap:nowrap}
 
 /* FORM */
 .form-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:16px}
@@ -159,6 +161,19 @@ tr:hover td{background:#ffffff}
   background:#ffffff;border-radius:0 10px 10px 0}
 .comment-meta{font-size:.76rem;color:var(--muted);margin-bottom:4px}
 .comment-text{font-size:.88rem;color:var(--text)}
+
+/* WHATSAPP SUPPORT BUTTON */
+.wa-support{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;align-items:center;gap:10px;
+  text-decoration:none}
+.wa-support .wa-tip{background:#0f172a;color:#fff;padding:8px 12px;border-radius:10px;font-size:.78rem;
+  font-weight:600;max-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:0;transform:translateX(8px);
+  transition:.2s;pointer-events:none}
+.wa-support:hover .wa-tip{opacity:1;transform:translateX(0)}
+.wa-support .wa-btn{width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;
+  justify-content:center;box-shadow:0 6px 18px rgba(37,211,102,.45);flex-shrink:0;transition:.15s}
+.wa-support .wa-btn:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(37,211,102,.55)}
+.wa-support .wa-btn svg{width:30px;height:30px;fill:#fff}
+@media(max-width:600px){.wa-support{right:14px;bottom:14px}.wa-support .wa-tip{display:none}}
 
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;
@@ -454,30 +469,9 @@ tr:hover td{background:#ffffff}
 
     <!-- TAB: PIN -->
     <div class="tab-pane" id="tab-pins">
-      <div class="sec-head"><h2>PIN Yarat və İxrac et</h2></div>
+      <div class="sec-head"><h2>PIN İdarəetməsi</h2></div>
 
       <div class="card">
-        <div class="card-head"><h3>PIN Generator</h3></div>
-        <div style="padding:20px">
-          <div class="form-row">
-            <div class="field" style="grid-column:1/3">
-              <label>Bağça</label>
-              <select id="pin-kg-select"></select>
-            </div>
-            <div class="field">
-              <label>Say</label>
-              <input type="number" id="pin-count" value="50" min="1" max="200" class="small">
-            </div>
-            <div style="display:flex;gap:8px;padding-bottom:1px">
-              <button class="btn btn-primary" onclick="generatePins()">PIN Yarat</button>
-              <button class="btn btn-outline" onclick="exportPins()">CSV</button>
-            </div>
-          </div>
-          <div class="pin-results" id="pin-results"></div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:18px">
         <div class="card-head" style="flex-wrap:wrap;gap:12px">
           <h3>Bütün PIN-lər</h3>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -618,6 +612,9 @@ let kgList = [];
 let appts = [];
 let pinsData = [];
 
+const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>';
+const ICON_DEL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+
 // ─── TAB ─────────────────────────────────────────────
 const TAB_TITLES = {
   overview:'Ümumi İcmal', appointments:'Randevular',
@@ -668,7 +665,6 @@ function renderAll() {
   renderKgManageTable();
   renderCharts();
   renderComments();
-  renderPinSelect();
   renderAppointments();
   renderPinsTable();
 }
@@ -763,8 +759,10 @@ function renderKgManageTable() {
       <td>${k.participant_count||0}</td>
       <td>${k.overall_avg||'—'}</td>
       <td>
-        <button class="btn-icon btn-edit" onclick="openEditModal(${k.id})" title="Redaktə">Redaktə</button>
-        <button class="btn-icon btn-del" onclick="deleteKg(${k.id},'${esc(k.name)}')" title="Sil">Sil</button>
+        <div class="row-actions">
+          <button class="btn-icon btn-edit" onclick="openEditModal(${k.id})" title="Redaktə">${ICON_EDIT}Redaktə</button>
+          <button class="btn-icon btn-del" onclick="deleteKg(${k.id},'${esc(k.name)}')" title="Sil">${ICON_DEL}Sil</button>
+        </div>
       </td>
     </tr>`).join('');
 }
@@ -910,8 +908,10 @@ function renderAppointments() {
       <td><code style="font-weight:700;letter-spacing:1px">${esc(a.pin)}</code></td>
       <td>${a.used?'<span class="badge badge-ok">Tamamlandı</span>':'<span class="badge badge-warn">Gözləyir</span>'}</td>
       <td>
-        <button class="btn-icon btn-edit" onclick="openEditAppt(${a.id})" title="Redaktə">Redaktə</button>
-        <button class="btn-icon btn-del" onclick="deleteAppt(${a.id},'${esc(a.parent)}')" title="Sil">Sil</button>
+        <div class="row-actions">
+          <button class="btn-icon btn-edit" onclick="openEditAppt(${a.id})" title="Redaktə">${ICON_EDIT}Redaktə</button>
+          <button class="btn-icon btn-del" onclick="deleteAppt(${a.id},'${esc(a.parent)}')" title="Sil">${ICON_DEL}Sil</button>
+        </div>
       </td>
     </tr>`).join('');
 }
@@ -1009,8 +1009,10 @@ function renderPinsTable() {
       <td>${p.valid_hour_start!=null ? fmtHHMM(p.valid_hour_start)+' – '+fmtHHMM(p.valid_hour_end) : '—'}</td>
       <td>${p.is_used?'<span class="badge badge-ok">İstifadə edilib</span>':'<span class="badge badge-warn">Aktiv</span>'}</td>
       <td>
-        <button class="btn-icon btn-edit" onclick="openEditPin(${p.id})" title="Redaktə">Redaktə</button>
-        <button class="btn-icon btn-del" onclick="deletePin(${p.id},'${esc(p.pin_code)}')" title="Sil">Sil</button>
+        <div class="row-actions">
+          <button class="btn-icon btn-edit" onclick="openEditPin(${p.id})" title="Redaktə">${ICON_EDIT}Redaktə</button>
+          <button class="btn-icon btn-del" onclick="deletePin(${p.id},'${esc(p.pin_code)}')" title="Sil">${ICON_DEL}Sil</button>
+        </div>
       </td>
     </tr>`).join('');
 }
@@ -1070,35 +1072,6 @@ function renderComments() {
       <div class="comment-meta">${esc(c.kindergarten_name)} &nbsp;·&nbsp; ${c.submitted_at}</div>
       <div class="comment-text">${esc(c.comment)}</div>
     </div>`).join('');
-}
-
-// ─── PIN SELECT ──────────────────────────────────────
-function renderPinSelect() {
-  document.getElementById('pin-kg-select').innerHTML =
-    kgList.map(k=>`<option value="${k.id}">${esc(k.name)} — ${esc(k.region)}</option>`).join('');
-}
-
-// ─── PIN GENERATE ─────────────────────────────────────
-async function generatePins() {
-  const kg_id = document.getElementById('pin-kg-select').value;
-  const count = parseInt(document.getElementById('pin-count').value)||50;
-  const res = document.getElementById('pin-results');
-  res.style.display='block'; res.textContent='Yaradılır...';
-  try {
-    const r = await fetch('/api/admin/generate-pins',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({kindergarten_id:kg_id, count})
-    });
-    const d = await r.json();
-    if(!r.ok){res.textContent=''+(d.error||'Xəta');return;}
-    res.innerHTML=`<strong>${esc(d.kindergartenName)} — ${d.count} PIN:</strong><br><br>`+
-      d.links.map((l,i)=>`${i+1}. <strong>${l.pin}</strong> — <a href="${l.url}" target="_blank">${l.url}</a>`).join('<br>');
-  } catch { res.textContent='Şəbəkə xətası'; }
-}
-
-async function exportPins() {
-  const kg_id = document.getElementById('pin-kg-select').value;
-  location.href = `/api/admin/export-pins/${kg_id}`;
 }
 
 // ─── KG MODAL ────────────────────────────────────────
@@ -1261,5 +1234,13 @@ document.addEventListener('keydown', function(e){
 refreshAll();
 setInterval(refreshAll, 60000);
 </script>
+<!-- WHATSAPP DƏSTƏK DÜYMƏSİ -->
+<a class="wa-support" href="https://wa.me/994557844877" target="_blank" rel="noopener" title="Texniki dəstək — WhatsApp">
+  <span class="wa-tip">Texniki çətinlik olarsa, Fuad Ələkbərovla WhatsApp üzərindən əlaqə saxlayın</span>
+  <span class="wa-btn">
+    <svg viewBox="0 0 32 32"><path d="M16.001 3C9.107 3 3.5 8.607 3.5 15.5c0 2.49.728 4.8 1.98 6.75L4 29l6.92-1.815A12.43 12.43 0 0 0 16 28c6.894 0 12.5-5.607 12.5-12.5S22.894 3 16.001 3zm0 22.7a10.16 10.16 0 0 1-5.18-1.42l-.372-.222-4.108 1.077 1.096-4.005-.243-.41a10.13 10.13 0 0 1-1.494-5.22c0-5.626 4.578-10.2 10.301-10.2 5.625 0 10.2 4.575 10.2 10.2.001 5.626-4.577 10.2-10.2 10.2zm5.598-7.642c-.307-.154-1.817-.897-2.099-1-.282-.103-.487-.154-.692.154-.205.308-.794 1-.973 1.205-.179.205-.358.231-.665.077-.307-.154-1.296-.477-2.469-1.523-.913-.814-1.529-1.82-1.708-2.128-.179-.308-.019-.474.135-.628.139-.139.307-.36.461-.539.154-.18.205-.308.307-.513.103-.205.051-.385-.026-.539-.077-.154-.692-1.667-.948-2.283-.25-.6-.504-.519-.692-.529-.179-.009-.384-.011-.589-.011-.205 0-.539.077-.82.385-.282.308-1.077 1.052-1.077 2.565s1.103 2.975 1.257 3.18c.154.205 2.171 3.313 5.262 4.646.735.317 1.309.507 1.756.649.738.235 1.41.202 1.941.123.592-.088 1.817-.743 2.073-1.461.256-.718.256-1.333.179-1.461-.077-.128-.282-.205-.589-.36z"/></svg>
+  </span>
+</a>
+
 </body>
 </html>
