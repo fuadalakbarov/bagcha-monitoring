@@ -236,6 +236,42 @@ tbody tr:hover td{background:#eef2ff !important}
   font-size:1.05rem;font-weight:700;color:var(--green);display:flex;align-items:center;
   justify-content:center;z-index:10;transition:.15s}
 .video-modal-close:hover{background:#fff;transform:scale(1.08)}
+
+/* GUIDE MODAL (yazılı istifadəçi təlimatı) */
+.guide-modal-overlay{position:fixed;inset:0;background:rgba(15,12,50,.6);z-index:300;
+  display:none;align-items:center;justify-content:center;padding:18px}
+.guide-modal-overlay.open{display:flex}
+.guide-modal-box{background:#fff;border-radius:20px;width:100%;max-width:620px;max-height:86vh;
+  display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(9,7,35,.4);overflow:hidden}
+.guide-modal-head{display:flex;align-items:center;gap:14px;padding:22px 24px;
+  background:linear-gradient(135deg,#312e81,#6366f1);color:#fff;flex-shrink:0;position:relative}
+.guide-modal-head-icon{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.18);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.guide-modal-head-icon svg{width:22px;height:22px}
+.guide-modal-head h3{font-size:1rem;font-weight:800}
+.guide-modal-head p{font-size:.78rem;color:#e0e7ff;margin-top:2px;font-weight:500}
+.guide-modal-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;
+  background:rgba(255,255,255,.18);border:none;color:#fff;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:.15s}
+.guide-modal-close svg{width:15px;height:15px}
+.guide-modal-close:hover{background:rgba(255,255,255,.3)}
+.guide-modal-body{padding:24px;overflow-y:auto}
+.guide-step{display:flex;gap:14px;margin-bottom:20px}
+.guide-step:last-of-type{margin-bottom:18px}
+.guide-step-num{width:30px;height:30px;border-radius:50%;background:#eef2ff;color:#4338ca;
+  font-weight:800;font-size:.86rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.guide-step-content h4{font-size:.92rem;font-weight:800;color:var(--text);margin-bottom:5px}
+.guide-step-content p{font-size:.84rem;color:var(--muted);line-height:1.6}
+.guide-step-content code{background:#f1f1fb;color:#4338ca;padding:2px 6px;border-radius:5px;font-size:.8rem}
+.guide-note{display:flex;gap:10px;background:#fff7e6;border:1px solid #fde7b8;border-radius:12px;
+  padding:13px 14px;align-items:flex-start}
+.guide-note svg{width:18px;height:18px;color:#a05e00;flex-shrink:0;margin-top:1px}
+.guide-note p{font-size:.8rem;color:#7a4e00;line-height:1.55}
+@media(max-width:600px){
+  .guide-modal-box{border-radius:14px;max-height:90vh}
+  .guide-modal-head{padding:18px 20px}
+  .guide-modal-body{padding:18px}
+}
 @media(max-width:480px){
   .video-modal-box{border-radius:12px}
   .video-modal-title{font-size:.74rem;padding:5px 11px}
@@ -364,7 +400,7 @@ tbody tr:hover td{background:#eef2ff !important}
 
     <div class="sb-footer">
       <div class="sb-action" onclick="openTutorial('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Admin Təlimatı</span></div>
-      <div class="sb-action" onclick="openTutorial('user')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><span>İstifadəçi Təlimatı</span></div>
+      <div class="sb-action" onclick="openUserGuide()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg><span>İstifadəçi Təlimatı</span></div>
       <div class="sb-action" onclick="refreshAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg><span>Yenilə</span></div>
       <div class="sb-action sb-logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Çıxış</span></div>
     </div>
@@ -650,6 +686,71 @@ tbody tr:hover td{background:#eef2ff !important}
     <video id="tutorial-video" controls playsinline>
       <source id="tutorial-video-src" src="/admintelimati_vx5T7L8I.mp4" type="video/mp4">
     </video>
+  </div>
+</div>
+
+<!-- MODAL: İstifadəçi Təlimatı (yazılı) -->
+<div class="guide-modal-overlay" id="guide-modal">
+  <div class="guide-modal-box">
+    <div class="guide-modal-head">
+      <div class="guide-modal-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg></div>
+      <div>
+        <h3>İstifadəçi Təlimatı</h3>
+        <p>Valideynlər sorğunu necə doldurur?</p>
+      </div>
+      <button class="guide-modal-close" onclick="closeUserGuide()" title="Bağla">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="guide-modal-body">
+
+      <div class="guide-step">
+        <div class="guide-step-num">1</div>
+        <div class="guide-step-content">
+          <h4>Qeydiyyat — randevu və PIN əldə etmə</h4>
+          <p>Valideyn saytda (qeydiyyat səhifəsində) öz və övladının adını, telefon nömrəsini, bağçanı və uyğun tarix/saatı seçərək qeydiyyatdan keçir. Qeydiyyat tamamlananda sistem avtomatik olaraq <strong>6 rəqəmli unikal PIN kod</strong> yaradır və ekranda göstərir. Bu PIN yalnız seçilmiş tarix və saat aralığında etibarlıdır.</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">2</div>
+        <div class="guide-step-content">
+          <h4>Sorğu səhifəsinə daxil olma</h4>
+          <p>Təyin olunmuş gün və saatda valideyn <code>/survey</code> səhifəsini açır (link PIN ilə birlikdə SMS/şifahi şəkildə ötürülə bilər). Səhifə açılanda arxa fonda tanıtım videosu, ortada isə PIN daxiletmə kartı görünür.</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">3</div>
+        <div class="guide-step-content">
+          <h4>PIN-in daxil edilməsi</h4>
+          <p>Valideyn 6 rəqəmli PIN-i daxil edib <strong>"Daxil ol"</strong> düyməsini basır. Sistem PIN-in düzgünlüyünü, tarix/saat etibarlılığını və daha əvvəl istifadə olunub-olunmadığını yoxlayır. PIN düzgündürsə, müvafiq bağçanın adı göstərilir və sorğu hissəsi açılır.</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">4</div>
+        <div class="guide-step-content">
+          <h4>4 sualın cavablandırılması</h4>
+          <p>Valideyn aşağıdakı 4 göstərici üzrə 3 seçimdən (Razı deyiləm / Qismən razıyam / Tamamilə razıyam) birini seçir: qidanın həcmi, keyfiyyəti, dadı və mətbəxin gigiyena vəziyyəti. İstəyə görə əlavə qeyd də yaza bilər.</p>
+        </div>
+      </div>
+
+      <div class="guide-step">
+        <div class="guide-step-num">5</div>
+        <div class="guide-step-content">
+          <h4>Göndərmə və təşəkkür ekranı</h4>
+          <p><strong>"Sorğunu Tamamla"</strong> düyməsi basılan kimi cavablar bazaya yazılır, istifadə olunan PIN bağlanır (təkrar istifadə oluna bilməz) və ekranda təşəkkür mesajı görünür.</p>
+        </div>
+      </div>
+
+      <div class="guide-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        <p>Hər PIN yalnız <strong>bir dəfə</strong> və yalnız təyin olunmuş tarix/saat aralığında işləyir. Vaxtı keçmiş və ya artıq istifadə olunmuş PIN-lər "PIN İdarəetməsi" bölməsindən admin tərəfindən yenidən tənzimlənə bilər.</p>
+      </div>
+
+    </div>
   </div>
 </div>
 
@@ -1281,10 +1382,9 @@ document.getElementById('kg-modal').addEventListener('click', function(e){
   if(e.target===this) closeModal();
 });
 
-// ─── TƏLİMAT VIDEOSU ─────────────────────────────────────────────
+// ─── TƏLİMAT VIDEOSU (Admin) ──────────────────────────────────────
 const TUTORIAL_VIDEOS = {
-  admin: { src: '/admintelimati_vx5T7L8I.mp4', title: '🎬 Admin Təlimatı' },
-  user:  { src: '/istifadecitelimati_FtiyCJEf.mp4', title: '🎬 İstifadəçi Təlimatı' }
+  admin: { src: '/admintelimati_vx5T7L8I.mp4', title: '🎬 Admin Təlimatı' }
 };
 function openTutorial(type){
   const cfg = TUTORIAL_VIDEOS[type] || TUTORIAL_VIDEOS.admin;
@@ -1307,6 +1407,20 @@ document.getElementById('video-modal').addEventListener('click', function(e){
 });
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape') closeTutorial();
+});
+
+// ─── İSTİFADƏÇİ TƏLİMATI (yazılı) ─────────────────────────────────
+function openUserGuide(){
+  document.getElementById('guide-modal').classList.add('open');
+}
+function closeUserGuide(){
+  document.getElementById('guide-modal').classList.remove('open');
+}
+document.getElementById('guide-modal').addEventListener('click', function(e){
+  if(e.target===this) closeUserGuide();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') closeUserGuide();
 });
 
 // ─── SOL PANELİN BAĞLANMASI/AÇILMASI ──────────────────────────────
