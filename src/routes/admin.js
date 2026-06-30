@@ -145,6 +145,205 @@ router.delete('/kindergartens/:id', requireAdmin, async (req, res) => {
   }
 });
 
+// ── Randevu slotları (survey.js ilə eyni) ────────────────────────
+const SLOTS = {
+  1: { label: '11:30 – 12:20', startH: 11, startM: 30, endH: 12, endM: 20 },
+  2: { label: '12:20 – 13:10', startH: 12, startM: 20, endH: 13, endM: 10 },
+  3: { label: '13:10 – 14:00', startH: 13, startM: 10, endH: 14, endM: 0 },
+};
+const SLOT_IDS = [1, 2, 3];
+
+// ── Randevular siyahısı ───────────────────────────────────────────
+router.get('/registrations', requireAdmin, async (req, res) => {
+  try {
+    const [regs, kgs, tokens] = await Promise.all([
+      query('registrations', { select: '*', order: 'appt_date.desc,appt_hour.asc' }),
+      query('kindergartens', { select: 'id,name,region' }),
+      query('survey_tokens', { select: 'pin_code,is_used' })
+    ]);
+    const kgMap = {};
+    kgs.forEach(k => { kgMap[k.id] = k; });
+    const usedMap = {};
+    tokens.forEach(t => { usedMap[t.pin_code] = !!t.is_used; });
+
+    const registrations = regs.map(r => {
+      const kg = kgMap[r.kindergarten_id] || {};
+      return {
+        id: r.id,
+        parent: `${r.surname || ''} ${r.name || ''} ${r.patronymic || ''}`.trim(),
+        surname: r.surname, name: r.name, patronymic: r.patronymic,
+        phone: r.phone,
+        child: `${r.child_surname || ''} ${r.child_name || ''} ${r.child_patronymic || ''}`.trim(),
+        child_surname: r.child_surname, child_name: r.child_name, child_patronymic: r.child_patronymic,
+        kindergarten_id: r.kindergarten_id,
+        kindergarten: kg.name || '—',
+        region: kg.region || '—',
+        appt_date: r.appt_date,
+        appt_hour: r.appt_hour,
+        slot: (SLOTS[r.appt_hour] || {}).label || '—',
+        pin: r.pin_code,
+        used: usedMap[r.pin_code] || false
+      };
+    });
+    res.json({ registrations });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server xətası' });
+  }
+});
+
+// ── Randevu yenilə ────────────────────────────────────────────────
+router.put('/registrations/:id', requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id);
+  const {
+    surname, name, patronymic, phone,
+    child_surname, child_name, child_patronymic,
+    kindergarten_id, appt_date, appt_hour
+  } = req.body;
+
+  if (!surname?.trim() || !name?.trim() || !patronymic?.trim())
+    return res.status(400).json({ error: 'Valideynin ad, soyad və ata adı tələb olunur' });
+  if (!phone?.trim())
+    return res.status(400).json({ error: 'Əlaqə nömrəsi tələb olunur' });
+  if (!child_surname?.trim() || !child_name?.trim() || !child_patronymic?.trim())
+    return res.status(400).json({ error: 'Övladın ad, soyad və ata adı tələb olunur' });
+  if (!kindergarten_id) return res.status(400).json({ error: 'Bağça seçilməyib' });
+
+  const slotId = parseInt(appt_hour);
+  if (!SLOT_IDS.includes(slotId))
+    return res.status(400).json({ error: 'Düzgün randevu saatı seçin' });
+  if (!appt_date) return res.status(400).json({ error: 'Tarix seçilməyib' });
+
+  try {
+    const existing = await query('registrations', { id: `eq.${id}` });
+    if (!existing.length) return res.status(404).json({ error: 'Randevu tapılmadı' });
+    const old = existing[0];
+
+    // Eyni bağça/tarix/saatda başqa randevu varmı (özü istisna)
+    const clashes = await query('registrations', {
+      kindergarten_id: `eq.${parseInt(kindergarten_id)}`,
+      appt_date: `eq.${appt_date}`,
+      appt_hour: `eq.${slotId}`
+    });
+    if (clashes.some(c => c.id !== id))
+      return res.status(409).json({ error: 'Bu saat artıq tutulub. Başqa saat seçin.' });
+
+    await update('registrations', { id }, {
+      surname: surname.trim(), name: name.trim(), patronymic: patronymic.trim(),
+      phone: phone.trim(),
+      child_surname: child_surname.trim(), child_name: child_name.trim(), child_patronymic: child_patronymic.trim(),
+      kindergarten_id: parseInt(kindergarten_id),
+      appt_date, appt_hour: slotId
+    });
+
+    // Uyğun PIN-in (survey_tokens) etibarlılıq tarix/saatını da yenilə
+    const slot = SLOTS[slotId];
+    await update('survey_tokens', { pin_code: old.pin_code }, {
+      kindergarten_id: parseInt(kindergarten_id),
+      valid_date: appt_date,
+      valid_hour_start: slot.startH * 100 + slot.startM,
+      valid_hour_end: slot.endH * 100 + slot.endM
+    });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server xətası' });
+  }
+});
+
+// ── Randevu sil ────────────────────────────────────────────────────
+router.delete('/registrations/:id', requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id);
+  try {
+    const existing = await query('registrations', { id: `eq.${id}` });
+    if (!existing.length) return res.status(404).json({ error: 'Randevu tapılmadı' });
+    const reg = existing[0];
+
+    await del('registrations', { id });
+    if (reg.pin_code) await del('survey_tokens', { pin_code: reg.pin_code });
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server xətası' });
+  }
+});
+
+// ── PIN siyahısı (hamısı) ──────────────────────────────────────────
+router.get('/pins', requireAdmin, async (req, res) => {
+  try {
+    const [tokens, kgs, regs] = await Promise.all([
+      query('survey_tokens', { select: '*', order: 'created_at.desc' }),
+      query('kindergartens', { select: 'id,name,region' }),
+      query('registrations', { select: 'pin_code,surname,name,patronymic,child_surname,child_name,child_patronymic,appt_date,appt_hour' })
+    ]);
+    const kgMap = {};
+    kgs.forEach(k => { kgMap[k.id] = k; });
+    const regMap = {};
+    regs.forEach(r => { regMap[r.pin_code] = r; });
+
+    const pins = tokens.map(t => {
+      const kg = kgMap[t.kindergarten_id] || {};
+      const reg = regMap[t.pin_code];
+      return {
+        id: t.id,
+        pin_code: t.pin_code,
+        kindergarten_id: t.kindergarten_id,
+        kindergarten: kg.name || '—',
+        region: kg.region || '—',
+        is_used: !!t.is_used,
+        valid_date: t.valid_date || null,
+        valid_hour_start: t.valid_hour_start ?? null,
+        valid_hour_end: t.valid_hour_end ?? null,
+        assigned_to: reg ? `${reg.surname || ''} ${reg.name || ''} ${reg.patronymic || ''}`.trim() : null,
+        assigned_child: reg ? `${reg.child_surname || ''} ${reg.child_name || ''} ${reg.child_patronymic || ''}`.trim() : null,
+        created_at: t.created_at
+      };
+    });
+    res.json({ pins });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server xətası' });
+  }
+});
+
+// ── PIN yenilə ──────────────────────────────────────────────────────
+router.put('/pins/:id', requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { kindergarten_id, is_used, valid_date, valid_hour_start, valid_hour_end } = req.body;
+
+  try {
+    const existing = await query('survey_tokens', { id: `eq.${id}` });
+    if (!existing.length) return res.status(404).json({ error: 'PIN tapılmadı' });
+
+    const payload = {};
+    if (kindergarten_id !== undefined) payload.kindergarten_id = parseInt(kindergarten_id);
+    if (is_used !== undefined) payload.is_used = is_used ? 1 : 0;
+    if (valid_date !== undefined) payload.valid_date = valid_date || null;
+    if (valid_hour_start !== undefined) payload.valid_hour_start = valid_hour_start === '' || valid_hour_start === null ? null : parseInt(valid_hour_start);
+    if (valid_hour_end !== undefined) payload.valid_hour_end = valid_hour_end === '' || valid_hour_end === null ? null : parseInt(valid_hour_end);
+
+    await update('survey_tokens', { id }, payload);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server xətası' });
+  }
+});
+
+// ── PIN sil ───────────────────────────────────────────────────────
+router.delete('/pins/:id', requireAdmin, async (req, res) => {
+  const id = parseInt(req.params.id);
+  try {
+    await del('survey_tokens', { id });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Server xətası' });
+  }
+});
+
 // ── PIN yarat (toplu) ────────────────────────────────────────────
 function genPin() {
   return String(Math.floor(100000 + Math.random() * 900000));
