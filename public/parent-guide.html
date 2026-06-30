@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İstifadəçi Təlimatı — Qidalanma Monitorinqi</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --brand-dark:#1e1b4b;--brand-mid:#312e81;--brand:#6366f1;--brand-light:#8b5cf6;
+  --ink:#1e1b4b;--muted:#6b7280;--border:#e4e4f5;
+}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  background:radial-gradient(circle at 12% 12%, #4338ca 0%, transparent 42%),
+             radial-gradient(circle at 88% 88%, #7c3aed 0%, transparent 42%),
+             linear-gradient(160deg,#1e1b4b 0%,#312e81 55%,#1e1b4b 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+
+.guide{width:100%;max-width:460px}
+
+.g-head{text-align:center;margin-bottom:20px;color:#fff}
+.g-logo{width:54px;height:54px;border-radius:16px;margin:0 auto 12px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 26px rgba(99,102,241,.4)}
+.g-logo svg{width:28px;height:28px}
+.g-head h1{font-size:1.18rem;font-weight:800}
+.g-head p{font-size:.82rem;color:#c7d2fe;font-weight:500;margin-top:3px}
+
+.g-progress{display:flex;gap:7px;margin-bottom:18px}
+.g-dot{flex:1;height:5px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden;cursor:pointer}
+.g-dot-fill{height:100%;width:0;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:4px;transition:width .35s ease}
+.g-dot.done .g-dot-fill,.g-dot.active .g-dot-fill{width:100%}
+
+.g-card{
+  background:rgba(255,255,255,.78);
+  -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+  border:1px solid rgba(255,255,255,.55);
+  border-radius:26px;padding:36px 30px;
+  box-shadow:0 24px 64px rgba(9,7,35,.45);min-height:420px;
+  display:flex;flex-direction:column;position:relative;overflow:hidden
+}
+
+.g-slide{display:none;animation:slideIn .4s ease}
+.g-slide.active{display:flex;flex-direction:column;flex:1;align-items:center;text-align:center}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.g-step-tag{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:800;
+  color:var(--brand-mid);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px}
+.g-step-tag .n{width:21px;height:21px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:.7rem}
+
+.g-illust{margin:6px 0 20px;display:flex;align-items:center;justify-content:center;min-height:140px}
+.g-illust svg{width:100%;max-width:260px;height:auto}
+
+.g-slide h2{font-size:1.18rem;font-weight:800;color:var(--ink);margin-bottom:9px;letter-spacing:-.01em}
+.g-slide p{font-size:.88rem;color:var(--muted);line-height:1.6}
+.g-slide .g-pin-demo{margin-top:16px;font-family:'Courier New',monospace;font-size:1.3rem;font-weight:800;
+  letter-spacing:.3em;color:var(--brand-mid);background:#eef2ff;border-radius:12px;padding:11px 18px;
+  border:2px dashed #c7d2fe}
+.g-slide .g-opt-demo{display:flex;gap:8px;margin-top:16px;width:100%;max-width:300px}
+.g-slide .g-opt-demo span{flex:1;border-radius:10px;padding:10px 4px;font-size:1.3rem;background:#fafaff;
+  border:2px solid var(--border)}
+.g-slide .g-opt-demo span.sel{background:linear-gradient(135deg,#6366f1,#8b5cf6);border-color:#6366f1}
+
+.g-nav{display:flex;align-items:center;justify-content:space-between;margin-top:20px;gap:10px}
+.g-btn{display:flex;align-items:center;gap:7px;padding:12px 20px;border-radius:12px;
+  font-size:.85rem;font-weight:700;cursor:pointer;border:none;transition:.18s}
+.g-btn svg{width:15px;height:15px}
+.g-btn-prev{background:rgba(255,255,255,.12);color:#e0e7ff;border:1px solid rgba(255,255,255,.22)}
+.g-btn-prev:hover{background:rgba(255,255,255,.2)}
+.g-btn-prev:disabled{opacity:.3;cursor:not-allowed}
+.g-btn-next{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
+  box-shadow:0 8px 22px rgba(99,102,241,.45);margin-left:auto}
+.g-btn-next:hover{box-shadow:0 10px 28px rgba(99,102,241,.55);transform:translateY(-1px)}
+.g-count{font-size:.76rem;color:#c7d2fe;font-weight:600}
+
+@media(max-width:480px){
+  .g-card{padding:28px 20px;min-height:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="guide">
+  <div class="g-head">
+    <div class="g-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2a2 2 0 0 0-2 2v5H7a2 2 0 0 0-2 2v9h6V9a2 2 0 0 0-2-2V4a2 2 0 0 1 4 0v3a2 2 0 0 0-2 2v11h8v-9a2 2 0 0 0-2-2h-2V4a2 2 0 0 0-2-2z"/></svg></div>
+    <h1>İstifadəçi Təlimatı</h1>
+    <p>Sorğunu necə dolduraq?</p>
+  </div>
+
+  <div class="g-progress" id="g-progress"></div>
+
+  <div class="g-card">
+
+    <!-- SLIDE 1 -->
+    <div class="g-slide active" data-slide="0">
+      <span class="g-step-tag"><span class="n">1</span>Qeydiyyat</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 260 150" fill="none">
+          <rect x="20" y="10" width="220" height="130" rx="16" fill="#eef2ff"/>
+          <rect x="40" y="32" width="120" height="9" rx="4" fill="#6366f1"/>
+          <rect x="40" y="52" width="180" height="7" rx="3" fill="#c7d2fe"/>
+          <rect x="40" y="68" width="180" height="7" rx="3" fill="#c7d2fe"/>
+          <rect x="40" y="92" width="80" height="28" rx="8" fill="#6366f1"/>
+          <text x="80" y="110" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">Göndər</text>
+        </svg>
+      </div>
+      <h2>Qeydiyyatdan keçin</h2>
+      <p>Bağça seçərək, övladınızın adını və uyğun gəliş tarix/saatını qeyd edərək sistemdə qeydiyyatdan keçin. Bu, bir dəfəlik addımdır.</p>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="g-slide" data-slide="1">
+      <span class="g-step-tag"><span class="n">2</span>PIN əldə edin</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 260 150" fill="none">
+          <circle cx="130" cy="70" r="58" fill="#eef2ff"/>
+          <path d="M130 40a18 18 0 0 0-18 18v8h-4a6 6 0 0 0-6 6v22a6 6 0 0 0 6 6h44a6 6 0 0 0 6-6V72a6 6 0 0 0-6-6h-4v-8a18 18 0 0 0-18-18zm0 8a10 10 0 0 1 10 10v8h-20v-8a10 10 0 0 1 10-10z" fill="#6366f1"/>
+        </svg>
+      </div>
+      <h2>Sizə PIN kod verilir</h2>
+      <p>Qeydiyyat tamamlanan kimi ekranda <strong>6 rəqəmli unikal PIN kod</strong> görünür. Bu kodu yadda saxlayın — sorğunu doldurmaq üçün lazım olacaq.</p>
+      <div class="g-pin-demo">482917</div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="g-slide" data-slide="2">
+      <span class="g-step-tag"><span class="n">3</span>Sorğu səhifəsi</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 260 150" fill="none">
+          <rect x="10" y="10" width="240" height="130" rx="16" fill="#1e1b4b"/>
+          <rect x="26" y="26" width="208" height="60" rx="10" fill="#ffffff" fill-opacity=".08"/>
+          <rect x="26" y="98" width="120" height="10" rx="5" fill="#a5b4fc"/>
+          <rect x="26" y="118" width="80" height="8" rx="4" fill="#6366f1"/>
+        </svg>
+      </div>
+      <h2>Təyin olunmuş vaxtda daxil olun</h2>
+      <p>Seçdiyiniz tarix/saat aralığında sorğu səhifəsini açın. PIN-iniz yalnız bu zaman kəsiyində aktivdir.</p>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="g-slide" data-slide="3">
+      <span class="g-step-tag"><span class="n">4</span>PIN daxil edin</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 260 150" fill="none">
+          <rect x="30" y="40" width="200" height="50" rx="12" fill="#fafaff" stroke="#6366f1" stroke-width="3"/>
+          <text x="130" y="73" font-size="20" font-weight="800" letter-spacing="6" fill="#1e1b4b" text-anchor="middle" font-family="monospace">— — — — — —</text>
+          <rect x="80" y="104" width="100" height="30" rx="9" fill="#6366f1"/>
+          <text x="130" y="124" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">Daxil ol</text>
+        </svg>
+      </div>
+      <h2>PIN kodunuzu yazın</h2>
+      <p>6 rəqəmli PIN-i daxiletmə xanasına yazıb <strong>"Daxil ol"</strong> düyməsini basın. Sistem sizi avtomatik bağçanızın sorğusuna yönləndirəcək.</p>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="g-slide" data-slide="4">
+      <span class="g-step-tag"><span class="n">5</span>Sualları cavablandırın</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 260 150" fill="none">
+          <rect x="10" y="10" width="240" height="130" rx="16" fill="#eef2ff"/>
+          <rect x="28" y="26" width="180" height="9" rx="4" fill="#312e81"/>
+        </svg>
+      </div>
+      <h2>4 qısa sual</h2>
+      <p>Qidanın həcmi, keyfiyyəti, dadı və mətbəxin gigiyenası haqqında 3 seçimdən birini seçin. İstəsəniz əlavə qeyd də yaza bilərsiniz.</p>
+      <div class="g-opt-demo">
+        <span>😕</span><span class="sel">😐</span><span>😊</span>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="g-slide" data-slide="5">
+      <span class="g-step-tag"><span class="n">6</span>Tamamlandı</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 260 150" fill="none">
+          <circle cx="130" cy="75" r="48" fill="#d1fae5"/>
+          <path d="M108 76 124 92 156 58" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <h2>Təşəkkür edirik!</h2>
+      <p>"Sorğunu Tamamla" düyməsini basan kimi rəyiniz qeydə alınır. Hər PIN yalnız bir dəfə istifadə oluna bilər — uşaqlarımızın sağlam qidalanmasına verdiyiniz töhfə üçün minnətdarıq!</p>
+    </div>
+
+  </div>
+
+  <div class="g-nav">
+    <button class="g-btn g-btn-prev" id="g-prev" onclick="gPrev()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Geri
+    </button>
+    <span class="g-count" id="g-count">1 / 6</span>
+    <button class="g-btn g-btn-next" id="g-next" onclick="gNext()">
+      İrəli<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.g-slide');
+const total = slides.length;
+let current = 0;
+
+const progressEl = document.getElementById('g-progress');
+for(let i=0;i<total;i++){
+  const dot = document.createElement('div');
+  dot.className = 'g-dot';
+  dot.innerHTML = '<div class="g-dot-fill"></div>';
+  dot.onclick = () => goTo(i);
+  progressEl.appendChild(dot);
+}
+const dots = progressEl.querySelectorAll('.g-dot');
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  dots.forEach((d,i)=>{
+    d.classList.toggle('active', i===current);
+    d.classList.toggle('done', i<current);
+  });
+  document.getElementById('g-prev').disabled = current===0;
+  const nextBtn = document.getElementById('g-next');
+  nextBtn.innerHTML = current===total-1
+    ? 'Sorğuya keç<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+    : 'İrəli<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+  document.getElementById('g-count').textContent = (current+1)+' / '+total;
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function gNext(){
+  if(current===total-1){ window.location.href = '/survey'; return; }
+  current = Math.min(total-1, current+1); render();
+}
+function gPrev(){ current = Math.max(0, current-1); render(); }
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') gNext();
+  if(e.key==='ArrowLeft') gPrev();
+});
+render();
+</script>
+</body>
+</html>
