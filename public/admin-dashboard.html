@@ -8,36 +8,71 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --green:#1F3D33;--green-mid:#2d5a45;--green-light:#5A8A6B;
-  --accent:#E8743B;--bg:#f0f4f0;--card:#fff;
-  --text:#1a2e26;--muted:#6b7e73;--border:#dde8e0;
-  --ok:#2d7a3d;--ok-bg:#e6f4ea;
+  --green:#312e81;--green-mid:#4f46e5;--green-light:#6366f1;
+  --accent:#E8743B;--bg:#f8fafc;--card:#fff;
+  --text:#1e1b4b;--muted:#64748b;--border:#e2e8f0;
+  --ok:#6366f1;--ok-bg:#eef2ff;
   --warn:#a05e00;--warn-bg:#fff7e6;
   --alarm:#B23A33;--alarm-bg:#fdecea;
 }
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
 
-/* NAV */
-nav{background:var(--green);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.brand{color:#FAF6EF;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
-.brand span{opacity:.55;font-weight:400;font-size:.85rem}
-.nav-actions{display:flex;gap:10px;align-items:center}
-.nav-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#FAF6EF;
-  padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.83rem;font-weight:500;transition:.15s}
-.nav-btn:hover{background:rgba(255,255,255,.22)}
-.nav-btn.active{background:rgba(255,255,255,.22)}
+/* LAYOUT */
+.layout{display:flex;min-height:100vh}
+.content-area{flex:1;min-width:0;display:flex;flex-direction:column}
 
-/* TABS */
-.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);background:var(--card);padding:0 28px}
-.tab{padding:14px 20px;cursor:pointer;font-weight:600;font-size:.88rem;color:var(--muted);
-  border-bottom:3px solid transparent;margin-bottom:-2px;transition:.15s}
-.tab:hover{color:var(--green)}
-.tab.active{color:var(--green);border-color:var(--green)}
+/* SIDEBAR */
+.sidebar{
+  width:248px;flex-shrink:0;
+  background:linear-gradient(180deg,#1e1b4b,#312e81 60%,#3730a3);
+  color:#e0e7ff;display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;
+  box-shadow:4px 0 24px rgba(30,27,75,.25);z-index:90;
+}
+.sb-brand{display:flex;align-items:center;gap:12px;padding:22px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sb-logo{width:42px;height:42px;flex-shrink:0;border-radius:12px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#38bdf8,#8b5cf6);color:#fff;box-shadow:0 6px 18px rgba(139,92,246,.4)}
+.sb-logo svg{width:24px;height:24px}
+.sb-titles{display:flex;flex-direction:column;line-height:1.3}
+.sb-titles strong{font-size:1.02rem;color:#fff;font-weight:700}
+.sb-titles span{font-size:.74rem;color:#a5b4fc;font-weight:500}
+
+.sb-nav{flex:1;padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.sb-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:11px;
+  cursor:pointer;font-weight:600;font-size:.92rem;color:#c7d2fe;transition:.15s;position:relative}
+.sb-item svg{width:19px;height:19px;flex-shrink:0;opacity:.85}
+.sb-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-item.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
+  box-shadow:0 8px 20px rgba(99,102,241,.4)}
+.sb-item.active svg{opacity:1}
+
+.sb-footer{padding:12px;border-top:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:3px}
+.sb-action{display:flex;align-items:center;gap:11px;padding:10px 14px;border-radius:10px;
+  cursor:pointer;font-size:.86rem;font-weight:600;color:#a5b4fc;transition:.15s}
+.sb-action svg{width:17px;height:17px;flex-shrink:0}
+.sb-action:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-logout:hover{background:rgba(239,68,68,.18);color:#fecaca}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;gap:14px;padding:0 24px;height:64px;
+  background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.topbar h1{font-size:1.15rem;font-weight:700;color:var(--green)}
+.topbar-spacer{flex:1}
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;color:var(--green);padding:6px}
+.menu-toggle svg{width:24px;height:24px}
 
 /* MAIN */
-main{max-width:1200px;margin:0 auto;padding:24px 20px}
+main{flex:1;max-width:1280px;width:100%;margin:0 auto;padding:24px 24px 48px}
 .tab-pane{display:none}
-.tab-pane.active{display:block}
+.tab-pane.active{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Mobile sidebar */
+@media(max-width:860px){
+  .sidebar{position:fixed;left:0;top:0;transform:translateX(-100%);transition:transform .25s ease}
+  .sidebar.open{transform:translateX(0)}
+  .menu-toggle{display:block}
+}
 
 /* KPI CARDS */
 .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
@@ -64,10 +99,10 @@ main{max-width:1200px;margin:0 auto;padding:24px 20px}
 .card-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-head h3{font-size:.9rem;font-weight:700;color:var(--green)}
 table{width:100%;border-collapse:collapse;font-size:.84rem}
-th{background:#f5f8f5;color:var(--green);padding:10px 14px;text-align:left;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
-td{padding:11px 14px;border-bottom:1px solid #f0f4f0;vertical-align:middle}
+th{background:#f8fafc;color:var(--green);padding:10px 14px;text-align:left;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.03em}
+td{padding:11px 14px;border-bottom:1px solid #f8fafc;vertical-align:middle}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:#fafcfa}
+tr:hover td{background:#ffffff}
 
 /* STATUS BADGE */
 .badge{padding:4px 10px;border-radius:20px;font-size:.76rem;font-weight:700;display:inline-block;white-space:nowrap}
@@ -78,13 +113,13 @@ tr:hover td{background:#fafcfa}
 
 /* SCORE */
 .score-cell{display:flex;align-items:center;gap:6px;white-space:nowrap}
-.bar{width:40px;height:5px;background:#e8ece8;border-radius:3px;overflow:hidden;flex-shrink:0}
+.bar{width:40px;height:5px;background:#f1f5f9;border-radius:3px;overflow:hidden;flex-shrink:0}
 .bar-fill{height:100%;border-radius:3px}
 
 /* TARGET */
 .target-cell{display:flex;align-items:center;gap:6px}
 .target-badge{font-size:.75rem;padding:2px 8px;border-radius:10px;font-weight:700}
-.above{background:#e6f4ea;color:#2d7a3d}
+.above{background:#eef2ff;color:#6366f1}
 .below{background:#fdecea;color:#B23A33}
 
 /* BUTTONS */
@@ -92,14 +127,14 @@ tr:hover td{background:#fafcfa}
 .btn-primary{background:var(--green);color:#fff}
 .btn-primary:hover{background:var(--green-mid)}
 .btn-outline{background:transparent;border:2px solid var(--green);color:var(--green)}
-.btn-outline:hover{background:#e8f0ec}
+.btn-outline:hover{background:#eef2ff}
 .btn-danger{background:transparent;border:2px solid #e53935;color:#e53935}
 .btn-danger:hover{background:#fdecea}
 .btn-sm{padding:5px 11px;font-size:.78rem}
 .btn-icon{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;
   font-size:.9rem;cursor:pointer;border:none;transition:.15s}
-.btn-edit{background:#e8f4f0;color:var(--green)}
-.btn-edit:hover{background:#d0e8dc}
+.btn-edit{background:#eef2ff;color:var(--green)}
+.btn-edit:hover{background:#e0e7ff}
 .btn-del{background:#fdecea;color:#B23A33}
 .btn-del:hover{background:#fbd5d4}
 
@@ -121,7 +156,7 @@ tr:hover td{background:#fafcfa}
 
 /* COMMENTS */
 .comment-item{border-left:4px solid var(--accent);padding:10px 14px;margin-bottom:10px;
-  background:#fffaf5;border-radius:0 10px 10px 0}
+  background:#ffffff;border-radius:0 10px 10px 0}
 .comment-meta{font-size:.76rem;color:var(--muted);margin-bottom:4px}
 .comment-text{font-size:.88rem;color:var(--text)}
 
@@ -246,33 +281,54 @@ tr:hover td{background:#fafcfa}
 </head>
 <body>
 
-<nav>
-  <div class="brand">🌿 Qidalanma Monitorinqi <span>Admin Paneli</span></div>
-  <div class="nav-actions">
-    <button class="nav-btn" onclick="openTutorial()">🎬 Təlimat</button>
-    <button class="nav-btn" onclick="refreshAll()">🔄 Yenilə</button>
-    <button class="nav-btn" onclick="logout()">Çıxış</button>
-  </div>
-</nav>
+<div class="layout">
 
-<div class="tabs">
-  <div class="tab active" onclick="showTab('overview')">📊 İcmal</div>
-  <div class="tab" onclick="showTab('kindergartens')">🏫 Bağçalar</div>
-  <div class="tab" onclick="showTab('pins')">🔑 PIN İdarəetməsi</div>
-  <div class="tab" onclick="showTab('comments')">💬 Şərhlər</div>
-</div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      </div>
+      <div class="sb-titles">
+        <strong>Monitorinq</strong>
+        <span>Admin Paneli</span>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-item active" onclick="showTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="10" width="3" height="8" rx="1"/><rect x="12" y="6" width="3" height="12" rx="1"/><rect x="17" y="13" width="3" height="5" rx="1"/></svg><span>İcmal</span></div>
+      <div class="sb-item" onclick="showTab('appointments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg><span>Randevular</span></div>
+      <div class="sb-item" onclick="showTab('kindergartens')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-5h6v5M9 11h.01M15 11h.01"/></svg><span>Bağçalar</span></div>
+      <div class="sb-item" onclick="showTab('pins')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3"/></svg><span>PIN İdarəetməsi</span></div>
+      <div class="sb-item" onclick="showTab('comments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Şərhlər</span></div>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-action" onclick="openTutorial()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Təlimat</span></div>
+      <div class="sb-action" onclick="refreshAll()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg><span>Yenilə</span></div>
+      <div class="sb-action sb-logout" onclick="logout()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span>Çıxış</span></div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+    <header class="topbar">
+      <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')" aria-label="Menyu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+      <h1 id="page-title">Ümumi İcmal</h1>
+      <div class="topbar-spacer"></div>
+    </header>
 
 <main>
-  <div id="loading" class="loading">⏳ Məlumatlar yüklənir...</div>
+  <div id="loading" class="loading">Məlumatlar yüklənir...</div>
   <div id="content" style="display:none">
 
     <!-- TAB: İCMAL -->
     <div class="tab-pane active" id="tab-overview">
 
       <div class="sec-head">
-        <h2>📊 Ümumi İcmal</h2>
+        <h2>Ümumi İcmal</h2>
         <div class="right">
-          <button class="btn btn-outline btn-sm" onclick="exportExcel()">📥 Excel Endir</button>
+          <button class="btn btn-outline btn-sm" onclick="exportExcel()">Excel Endir</button>
         </div>
       </div>
 
@@ -280,18 +336,27 @@ tr:hover td{background:#fafcfa}
 
       <div class="charts-row">
         <div class="chart-card">
-          <h3>📈 Bağçalar üzrə Ortalama Bal</h3>
+          <h3>Bağçalar üzrə Ortalama Bal</h3>
           <div class="chart-wrap"><canvas id="chart-bar"></canvas></div>
         </div>
         <div class="chart-card">
-          <h3>🕐 Son 7 Günün Trendi</h3>
+          <h3>Son 7 Günün Trendi</h3>
           <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
         </div>
       </div>
 
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head"><h3>Region üzrə Müqayisə</h3></div>
+        <div class="chart-wrap" style="padding:16px"><canvas id="chart-region"></canvas></div>
+      </div>
+
       <div class="card">
-        <div class="card-head">
-          <h3>🏫 Bağçalar üzrə Monitorinq</h3>
+        <div class="card-head" style="flex-wrap:wrap;gap:12px">
+          <h3>Bağçalar üzrə Monitorinq</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <select id="ov-region-filter" onchange="renderOverviewTable()" style="min-width:140px"><option value="">Bütün rayonlar</option></select>
+            <input type="text" id="ov-search" oninput="renderOverviewTable()" placeholder="Bağça axtar..." style="min-width:180px">
+          </div>
         </div>
         <div style="overflow-x:auto">
           <table>
@@ -316,11 +381,52 @@ tr:hover td{background:#fafcfa}
 
     </div>
 
+    <!-- TAB: RANDEVULAR -->
+    <div class="tab-pane" id="tab-appointments">
+      <div class="sec-head">
+        <h2>Randevular</h2>
+        <div class="right">
+          <button class="btn btn-outline btn-sm" onclick="exportAppointments()">Excel Endir</button>
+        </div>
+      </div>
+
+      <div class="kpi-row" id="appt-kpi" style="margin-bottom:18px"></div>
+
+      <div class="card">
+        <div class="card-head" style="flex-wrap:wrap;gap:12px">
+          <h3>Bütün Qeydiyyatlar</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <input type="date" id="appt-date-filter" onchange="renderAppointments()" style="min-width:150px">
+            <select id="appt-region-filter" onchange="renderAppointments()" style="min-width:140px"><option value="">Bütün rayonlar</option></select>
+            <input type="text" id="appt-search" oninput="renderAppointments()" placeholder="Ad, telefon, bağça axtar..." style="min-width:200px">
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Valideyn</th>
+                <th>Övlad</th>
+                <th>Telefon</th>
+                <th>Bağça</th>
+                <th>Region</th>
+                <th>Tarix</th>
+                <th>Saat</th>
+                <th>PIN</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="appt-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB: BAĞÇALAR -->
     <div class="tab-pane" id="tab-kindergartens">
 
       <div class="sec-head">
-        <h2>🏫 Bağça İdarəetməsi</h2>
+        <h2>Bağça İdarəetməsi</h2>
         <button class="btn btn-primary" onclick="openAddModal()">+ Əlavə et</button>
       </div>
 
@@ -347,7 +453,7 @@ tr:hover td{background:#fafcfa}
 
     <!-- TAB: PIN -->
     <div class="tab-pane" id="tab-pins">
-      <div class="sec-head"><h2>🔑 PIN Yarat &amp; İxrac et</h2></div>
+      <div class="sec-head"><h2>PIN Yarat və İxrac et</h2></div>
 
       <div class="card">
         <div class="card-head"><h3>PIN Generator</h3></div>
@@ -363,7 +469,7 @@ tr:hover td{background:#fafcfa}
             </div>
             <div style="display:flex;gap:8px;padding-bottom:1px">
               <button class="btn btn-primary" onclick="generatePins()">PIN Yarat</button>
-              <button class="btn btn-outline" onclick="exportPins()">📥 CSV</button>
+              <button class="btn btn-outline" onclick="exportPins()">CSV</button>
             </div>
           </div>
           <div class="pin-results" id="pin-results"></div>
@@ -373,12 +479,14 @@ tr:hover td{background:#fafcfa}
 
     <!-- TAB: ŞƏRHLƏR -->
     <div class="tab-pane" id="tab-comments">
-      <div class="sec-head"><h2>💬 Valideyn Şərhləri</h2></div>
+      <div class="sec-head"><h2>Valideyn Şərhləri</h2></div>
       <div id="comments-list"></div>
     </div>
 
   </div><!-- /content -->
 </main>
+  </div><!-- /content-area -->
+</div><!-- /layout -->
 
 <!-- MODAL: Bağça əlavə/redaktə -->
 <div class="modal-overlay" id="kg-modal">
@@ -418,43 +526,66 @@ tr:hover td{background:#fafcfa}
 <script>
 let dash = null;
 let kgList = [];
+let appts = [];
 
 // ─── TAB ─────────────────────────────────────────────
+const TAB_TITLES = {
+  overview:'Ümumi İcmal', appointments:'Randevular',
+  kindergartens:'Bağça İdarəetməsi', pins:'PIN İdarəetməsi', comments:'Şərhlər'
+};
 function showTab(name) {
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['overview','kindergartens','pins','comments'];
+  const names = ['overview','appointments','kindergartens','pins','comments'];
+  document.querySelectorAll('.sb-item').forEach((t,i) => {
     t.classList.toggle('active', names[i] === name);
   });
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
+  const pt = document.getElementById('page-title');
+  if (pt) pt.textContent = TAB_TITLES[name] || '';
+  const sb = document.getElementById('sidebar');
+  if (sb) sb.classList.remove('open');
 }
 
 // ─── LOAD ─────────────────────────────────────────────
 async function refreshAll() {
   try {
-    const [dRes, kRes] = await Promise.all([
+    const [dRes, kRes, rRes] = await Promise.all([
       fetch('/api/admin/dashboard'),
-      fetch('/api/admin/kindergartens')
+      fetch('/api/admin/kindergartens'),
+      fetch('/api/admin/registrations')
     ]);
     if (dRes.status === 401) { location.href = '/admin'; return; }
     dash = await dRes.json();
     kgList = await kRes.json();
+    const rData = await rRes.json();
+    appts = rData.registrations || [];
     renderAll();
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
     if (!window.__tutorialShown) { window.__tutorialShown = true; openTutorial(); }
   } catch(e) {
-    document.getElementById('loading').textContent = '❌ Xəta baş verdi.';
+    document.getElementById('loading').textContent = 'Xəta baş verdi.';
   }
 }
 
 function renderAll() {
   renderKPI();
+  populateFilters();
   renderOverviewTable();
   renderKgManageTable();
   renderCharts();
   renderComments();
   renderPinSelect();
+  renderAppointments();
+}
+
+// ─── Filtr seçimlərini doldur ────────────────────────
+function populateFilters() {
+  const regions = [...new Set(dash.kindergartens.map(k=>k.region).filter(Boolean))].sort();
+  const ovSel = document.getElementById('ov-region-filter');
+  const apSel = document.getElementById('appt-region-filter');
+  if (ovSel && ovSel.options.length<=1) regions.forEach(r=>{ovSel.add(new Option(r,r));});
+  if (apSel && apSel.options.length<=1) regions.forEach(r=>{apSel.add(new Option(r,r));});
 }
 
 // ─── KPI ─────────────────────────────────────────────
@@ -484,22 +615,33 @@ function scoreCell(val) {
 
 function statusBadge(avg, count) {
   if (!count) return '<span class="badge badge-nd">Məlumat yoxdur</span>';
-  if (avg>=2.5) return '<span class="badge badge-ok">✅ Normal</span>';
-  if (avg>=1.8) return '<span class="badge badge-warn">⚠️ Diqqət</span>';
-  return '<span class="badge badge-alarm">🚨 Alarm</span>';
+  if (avg>=2.5) return '<span class="badge badge-ok">Normal</span>';
+  if (avg>=1.8) return '<span class="badge badge-warn">Diqqət</span>';
+  return '<span class="badge badge-alarm">Alarm</span>';
 }
 
 function targetCell(avg, target, count) {
   if (!count) return '<span style="color:#bbb">—</span>';
   const above = avg >= target;
   return `<div class="target-cell">
-    <span class="target-badge ${above?'above':'below'}">${above?'▲ Hədəf üstündə':'▼ Hədəfdən aşağı'}</span>
+    <span class="target-badge ${above?'above':'below'}">${above?'Hədəf üstündə':'Hədəfdən aşağı'}</span>
     <span style="color:var(--muted);font-size:.75rem">(${target})</span>
   </div>`;
 }
 
 function renderOverviewTable() {
-  document.getElementById('overview-table').innerHTML = dash.kindergartens.map(k => `
+  const reg = (document.getElementById('ov-region-filter')||{}).value || '';
+  const q = ((document.getElementById('ov-search')||{}).value || '').trim().toLowerCase();
+  let rows = dash.kindergartens;
+  if (reg) rows = rows.filter(k=>k.region===reg);
+  if (q) rows = rows.filter(k=>k.name.toLowerCase().includes(q));
+
+  const tb = document.getElementById('overview-table');
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:30px">Uyğun nəticə tapılmadı</td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map(k => `
     <tr>
       <td><strong>${esc(k.name)}</strong></td>
       <td>${esc(k.region)}</td>
@@ -525,8 +667,8 @@ function renderKgManageTable() {
       <td>${k.participant_count||0}</td>
       <td>${k.overall_avg||'—'}</td>
       <td>
-        <button class="btn-icon btn-edit" onclick="openEditModal(${k.id})" title="Redaktə">✏️</button>
-        <button class="btn-icon btn-del" onclick="deleteKg(${k.id},'${esc(k.name)}')" title="Sil">🗑️</button>
+        <button class="btn-icon btn-edit" onclick="openEditModal(${k.id})" title="Redaktə">Redaktə</button>
+        <button class="btn-icon btn-del" onclick="deleteKg(${k.id},'${esc(k.name)}')" title="Sil">Sil</button>
       </td>
     </tr>`).join('');
 }
@@ -589,6 +731,99 @@ function renderCharts() {
       plugins:{ legend:{position:'bottom', labels:{font:{size:11},boxWidth:12}} }
     }
   });
+
+  renderRegionChart();
+}
+
+// ─── REGION CHART ────────────────────────────────────
+let regionChart;
+function renderRegionChart() {
+  const el = document.getElementById('chart-region');
+  if (!el) return;
+  const byRegion = {};
+  dash.kindergartens.forEach(k=>{
+    if (!k.participant_count) return;
+    if (!byRegion[k.region]) byRegion[k.region] = { sum:0, n:0, parts:0 };
+    byRegion[k.region].sum += k.overall_avg;
+    byRegion[k.region].n += 1;
+    byRegion[k.region].parts += k.participant_count;
+  });
+  const regions = Object.keys(byRegion).sort();
+  const avgs = regions.map(r => Math.round(byRegion[r].sum/byRegion[r].n*100)/100);
+  const parts = regions.map(r => byRegion[r].parts);
+
+  if (regionChart) regionChart.destroy();
+  regionChart = new Chart(el.getContext('2d'), {
+    type:'bar',
+    data:{
+      labels:regions,
+      datasets:[
+        { label:'Ortalama bal', data:avgs, backgroundColor:'#6366f1', yAxisID:'y', borderRadius:6 },
+        { label:'İştirakçı sayı', data:parts, backgroundColor:'#a78bfa', yAxisID:'y2', borderRadius:6 }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{
+        y:{ min:0, max:3, position:'left', grid:{color:'#eee'}, ticks:{stepSize:.5}, title:{display:true,text:'Bal'} },
+        y2:{ position:'right', grid:{display:false}, ticks:{color:'#8b5cf6'}, title:{display:true,text:'İştirakçı'} },
+        x:{grid:{display:false}}
+      },
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11},boxWidth:12}} }
+    }
+  });
+}
+
+// ─── RANDEVULAR ──────────────────────────────────────
+function renderAppointments() {
+  const reg = (document.getElementById('appt-region-filter')||{}).value || '';
+  const date = (document.getElementById('appt-date-filter')||{}).value || '';
+  const q = ((document.getElementById('appt-search')||{}).value || '').trim().toLowerCase();
+
+  let rows = appts.slice();
+  if (reg) rows = rows.filter(a=>a.region===reg);
+  if (date) rows = rows.filter(a=>a.appt_date===date);
+  if (q) rows = rows.filter(a=>
+    (a.parent+' '+a.child+' '+a.phone+' '+a.kindergarten).toLowerCase().includes(q));
+
+  // KPI
+  const today = new Date().toISOString().slice(0,10);
+  const todayCount = appts.filter(a=>a.appt_date===today).length;
+  const usedCount = appts.filter(a=>a.used).length;
+  const kpi = document.getElementById('appt-kpi');
+  if (kpi) kpi.innerHTML = `
+    <div class="kpi"><div class="num">${appts.length}</div><div class="lbl">Ümumi randevu</div></div>
+    <div class="kpi"><div class="num">${todayCount}</div><div class="lbl">Bu gün</div></div>
+    <div class="kpi"><div class="num">${usedCount}</div><div class="lbl">Tamamlanmış</div></div>
+    <div class="kpi"><div class="num">${appts.length-usedCount}</div><div class="lbl">Gözləyən</div></div>`;
+
+  const tb = document.getElementById('appt-table');
+  if (!rows.length) {
+    tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:30px">Randevu tapılmadı</td></tr>';
+    return;
+  }
+  tb.innerHTML = rows.map(a=>`
+    <tr>
+      <td><strong>${esc(a.parent)}</strong></td>
+      <td>${esc(a.child)}</td>
+      <td>${esc(a.phone)}</td>
+      <td>${esc(a.kindergarten)}</td>
+      <td>${esc(a.region)}</td>
+      <td>${esc(a.appt_date)}</td>
+      <td>${esc(a.slot)}</td>
+      <td><code style="font-weight:700;letter-spacing:1px">${esc(a.pin)}</code></td>
+      <td>${a.used?'<span class="badge badge-ok">Tamamlandı</span>':'<span class="badge badge-warn">Gözləyir</span>'}</td>
+    </tr>`).join('');
+}
+
+function exportAppointments() {
+  const rows = [['Valideyn','Övlad','Telefon','Bağça','Region','Tarix','Saat','PIN','Status']];
+  appts.forEach(a=>rows.push([a.parent,a.child,a.phone,a.kindergarten,a.region,a.appt_date,a.slot,a.pin,a.used?'Tamamlandı':'Gözləyir']));
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='randevular.csv';a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── COMMENTS ────────────────────────────────────────
@@ -599,7 +834,7 @@ function renderComments() {
   }
   el.innerHTML = dash.comments.map(c=>`
     <div class="comment-item">
-      <div class="comment-meta">🏫 ${esc(c.kindergarten_name)} &nbsp;·&nbsp; 🕐 ${c.submitted_at}</div>
+      <div class="comment-meta">${esc(c.kindergarten_name)} &nbsp;·&nbsp; ${c.submitted_at}</div>
       <div class="comment-text">${esc(c.comment)}</div>
     </div>`).join('');
 }
@@ -615,17 +850,17 @@ async function generatePins() {
   const kg_id = document.getElementById('pin-kg-select').value;
   const count = parseInt(document.getElementById('pin-count').value)||50;
   const res = document.getElementById('pin-results');
-  res.style.display='block'; res.textContent='⏳ Yaradılır...';
+  res.style.display='block'; res.textContent='Yaradılır...';
   try {
     const r = await fetch('/api/admin/generate-pins',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({kindergarten_id:kg_id, count})
     });
     const d = await r.json();
-    if(!r.ok){res.textContent='❌ '+(d.error||'Xəta');return;}
+    if(!r.ok){res.textContent=''+(d.error||'Xəta');return;}
     res.innerHTML=`<strong>${esc(d.kindergartenName)} — ${d.count} PIN:</strong><br><br>`+
       d.links.map((l,i)=>`${i+1}. <strong>${l.pin}</strong> — <a href="${l.url}" target="_blank">${l.url}</a>`).join('<br>');
-  } catch { res.textContent='❌ Şəbəkə xətası'; }
+  } catch { res.textContent='Şəbəkə xətası'; }
 }
 
 async function exportPins() {
