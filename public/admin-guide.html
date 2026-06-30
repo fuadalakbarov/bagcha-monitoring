@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Təlimatı — Qidalanma Monitorinqi</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --brand-dark:#1e1b4b;--brand-mid:#312e81;--brand:#6366f1;--brand-light:#8b5cf6;
+  --ink:#1e1b4b;--muted:#64748b;--border:#e4e4f5;
+}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  min-height:100vh;
+  background:radial-gradient(circle at 15% 10%, #3730a3 0%, transparent 45%),
+             radial-gradient(circle at 85% 90%, #6d28d9 0%, transparent 45%),
+             linear-gradient(160deg,#1e1b4b 0%,#312e81 55%,#1e1b4b 100%);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;color:#fff;
+}
+
+.guide{width:100%;max-width:720px}
+
+/* HEADER */
+.g-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.g-logo{width:46px;height:46px;border-radius:13px;flex-shrink:0;
+  background:linear-gradient(135deg,#38bdf8,#8b5cf6);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 20px rgba(139,92,246,.4)}
+.g-logo svg{width:24px;height:24px}
+.g-head h1{font-size:1.15rem;font-weight:800}
+.g-head p{font-size:.8rem;color:#c7d2fe;font-weight:500;margin-top:2px}
+.g-back{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.8rem;font-weight:700;
+  color:#c7d2fe;text-decoration:none;padding:8px 14px;border-radius:9px;border:1px solid rgba(255,255,255,.18);
+  transition:.15s}
+.g-back:hover{background:rgba(255,255,255,.08);color:#fff}
+.g-back svg{width:14px;height:14px}
+
+/* PROGRESS DOTS */
+.g-progress{display:flex;gap:7px;margin-bottom:24px}
+.g-dot{flex:1;height:5px;border-radius:4px;background:rgba(255,255,255,.16);overflow:hidden;cursor:pointer}
+.g-dot-fill{height:100%;width:0;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:4px;transition:width .35s ease}
+.g-dot.done .g-dot-fill{width:100%}
+.g-dot.active .g-dot-fill{width:100%}
+
+/* CARD */
+.g-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);
+  border-radius:24px;padding:40px 36px;backdrop-filter:blur(10px);
+  box-shadow:0 24px 64px rgba(9,7,35,.4);min-height:420px;
+  display:flex;flex-direction:column;position:relative;overflow:hidden}
+
+.g-slide{display:none;animation:slideIn .4s ease}
+.g-slide.active{display:flex;flex-direction:column;flex:1}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+
+.g-step-tag{display:inline-flex;align-items:center;gap:7px;font-size:.74rem;font-weight:800;
+  color:#a5b4fc;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.g-step-tag .n{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem}
+
+.g-illust{flex:1;display:flex;align-items:center;justify-content:center;margin:8px 0 22px;min-height:180px}
+.g-illust svg{width:100%;max-width:380px;height:auto}
+
+.g-slide h2{font-size:1.3rem;font-weight:800;margin-bottom:10px;letter-spacing:-.01em}
+.g-slide p{font-size:.92rem;color:#dcdcff;line-height:1.65}
+.g-slide ul{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.g-slide li{display:flex;align-items:flex-start;gap:9px;font-size:.86rem;color:#dcdcff;line-height:1.5}
+.g-slide li svg{width:16px;height:16px;flex-shrink:0;margin-top:2px;color:#a5b4fc}
+
+/* NAV */
+.g-nav{display:flex;align-items:center;justify-content:space-between;margin-top:26px;gap:12px}
+.g-btn{display:flex;align-items:center;gap:8px;padding:12px 22px;border-radius:12px;
+  font-size:.88rem;font-weight:700;cursor:pointer;border:none;transition:.18s}
+.g-btn svg{width:16px;height:16px}
+.g-btn-prev{background:rgba(255,255,255,.08);color:#dcdcff;border:1px solid rgba(255,255,255,.16)}
+.g-btn-prev:hover{background:rgba(255,255,255,.14)}
+.g-btn-prev:disabled{opacity:.35;cursor:not-allowed}
+.g-btn-next{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;
+  box-shadow:0 8px 22px rgba(99,102,241,.4);margin-left:auto}
+.g-btn-next:hover{box-shadow:0 10px 28px rgba(99,102,241,.5);transform:translateY(-1px)}
+.g-count{font-size:.78rem;color:#a5b4fc;font-weight:600}
+
+@media(max-width:600px){
+  .g-card{padding:28px 22px;min-height:auto}
+  .g-head h1{font-size:1rem}
+  .g-back span{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="guide">
+  <div class="g-head">
+    <div class="g-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+    <div>
+      <h1>Admin Təlimatı</h1>
+      <p>Bağçada Qidalanma Monitorinqi — idarəetmə paneli</p>
+    </div>
+    <a class="g-back" href="/admin-dashboard.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M5 12h14"/></svg><span>Panelə qayıt</span></a>
+  </div>
+
+  <div class="g-progress" id="g-progress"></div>
+
+  <div class="g-card">
+
+    <!-- SLIDE 1 -->
+    <div class="g-slide active" data-slide="0">
+      <span class="g-step-tag"><span class="n">1</span>Xoş gəlmisiniz</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 380 200" fill="none">
+          <rect x="10" y="10" width="100" height="180" rx="14" fill="#312e81"/>
+          <rect x="26" y="28" width="68" height="10" rx="5" fill="#6366f1"/>
+          <rect x="26" y="50" width="68" height="8" rx="4" fill="#4338ca"/>
+          <rect x="26" y="66" width="68" height="8" rx="4" fill="#4338ca"/>
+          <rect x="26" y="82" width="68" height="8" rx="4" fill="#4338ca"/>
+          <rect x="130" y="10" width="240" height="48" rx="12" fill="#ffffff" fill-opacity=".08"/>
+          <rect x="130" y="68" width="112" height="60" rx="12" fill="#6366f1" fill-opacity=".25"/>
+          <rect x="258" y="68" width="112" height="60" rx="12" fill="#8b5cf6" fill-opacity=".25"/>
+          <rect x="130" y="138" width="240" height="48" rx="12" fill="#ffffff" fill-opacity=".06"/>
+        </svg>
+      </div>
+      <h2>Bu panel nə üçündür?</h2>
+      <p>Admin paneli vasitəsilə bağçalardakı qidalanma sorğularının nəticələrini izləyə, randevuları idarə edə, PIN kodlarına nəzarət edə və valideyn şərhlərini görə bilərsiniz. Bu qısa təlimat panelin əsas bölmələrini addım-addım izah edir.</p>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="g-slide" data-slide="1">
+      <span class="g-step-tag"><span class="n">2</span>Ümumi İcmal</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 380 200" fill="none">
+          <rect x="10" y="10" width="80" height="60" rx="12" fill="#6366f1" fill-opacity=".3"/>
+          <rect x="100" y="10" width="80" height="60" rx="12" fill="#8b5cf6" fill-opacity=".3"/>
+          <rect x="190" y="10" width="80" height="60" rx="12" fill="#10b981" fill-opacity=".3"/>
+          <rect x="280" y="10" width="90" height="60" rx="12" fill="#f59e0b" fill-opacity=".3"/>
+          <rect x="10" y="84" width="175" height="106" rx="14" fill="#ffffff" fill-opacity=".07"/>
+          <polyline points="26,170 60,140 95,155 130,110 165,130" stroke="#a5b4fc" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="195" y="84" width="175" height="106" rx="14" fill="#ffffff" fill-opacity=".07"/>
+          <rect x="212" y="150" width="20" height="24" rx="3" fill="#6366f1"/>
+          <rect x="240" y="130" width="20" height="44" rx="3" fill="#8b5cf6"/>
+          <rect x="268" y="110" width="20" height="64" rx="3" fill="#6366f1"/>
+          <rect x="296" y="140" width="20" height="34" rx="3" fill="#8b5cf6"/>
+        </svg>
+      </div>
+      <h2>Statistikalar bir baxışda</h2>
+      <p>"İcmal" bölməsində ümumi cavab sayı, bağça sayı, istifadə olunan/aktiv PIN-lər və ortalama bal göstərilir. Aşağıda isə bağçalar üzrə müqayisə qrafikləri, son 7 günün trendi və region üzrə müqayisə yer alır.</p>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>Cədvəldə region və ad üzrə filtr/axtarış edə bilərsiniz</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>"Excel Endir" düyməsi ilə nəticələri ixrac edə bilərsiniz</li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="g-slide" data-slide="2">
+      <span class="g-step-tag"><span class="n">3</span>Randevular</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 380 200" fill="none">
+          <rect x="10" y="10" width="360" height="28" rx="8" fill="#ffffff" fill-opacity=".1"/>
+          <rect x="10" y="46" width="360" height="34" rx="8" fill="#ffffff" fill-opacity=".05"/>
+          <rect x="10" y="88" width="360" height="34" rx="8" fill="#ffffff" fill-opacity=".08"/>
+          <rect x="10" y="130" width="360" height="34" rx="8" fill="#ffffff" fill-opacity=".05"/>
+          <rect x="300" y="55" width="34" height="16" rx="5" fill="#6366f1"/>
+          <rect x="338" y="55" width="34" height="16" rx="5" fill="#ef4444" fill-opacity=".7"/>
+          <rect x="300" y="139" width="34" height="16" rx="5" fill="#6366f1"/>
+          <rect x="338" y="139" width="34" height="16" rx="5" fill="#ef4444" fill-opacity=".7"/>
+        </svg>
+      </div>
+      <h2>Bütün qeydiyyatlara baxış</h2>
+      <p>"Randevular" bölməsində valideynlərin etdiyi bütün qeydiyyatlar — valideyn/övlad adı, telefon, bağça, tarix, saat və PIN — görünür. Hər sətirdə iki əməliyyat var:</p>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg><strong>Redaktə</strong> — tarix, saat, bağça və ya əlaqə məlumatlarını dəyişə bilərsiniz</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg><strong>Sil</strong> — randevunu və bağlı PIN-i bazadan silir</li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="g-slide" data-slide="3">
+      <span class="g-step-tag"><span class="n">4</span>Bağçalar</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 380 200" fill="none">
+          <rect x="10" y="10" width="110" height="180" rx="14" fill="#ffffff" fill-opacity=".07"/>
+          <rect x="26" y="30" width="78" height="8" rx="4" fill="#6366f1"/>
+          <rect x="26" y="46" width="50" height="6" rx="3" fill="#a5b4fc"/>
+          <rect x="135" y="10" width="110" height="180" rx="14" fill="#ffffff" fill-opacity=".07"/>
+          <rect x="151" y="30" width="78" height="8" rx="4" fill="#8b5cf6"/>
+          <rect x="151" y="46" width="50" height="6" rx="3" fill="#c4b5fd"/>
+          <rect x="260" y="10" width="110" height="180" rx="14" fill="#ffffff" fill-opacity=".07"/>
+          <rect x="276" y="30" width="78" height="8" rx="4" fill="#10b981"/>
+          <rect x="276" y="46" width="50" height="6" rx="3" fill="#6ee7b7"/>
+          <circle cx="345" cy="170" r="14" fill="#6366f1"/>
+          <path d="M345 163v14M338 170h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>Bağça siyahısının idarəsi</h2>
+      <p>"Bağçalar" bölməsində bütün bağçaların adı, regionu, hədəf balı və iştirakçı sayı görünür. Sağ yuxarıdakı <strong>"+ Əlavə et"</strong> düyməsi ilə yeni bağça yarada, "Redaktə" ilə mövcud bağçanı dəyişə, "Sil" ilə isə silə bilərsiniz (diqqət: bağça silinəndə ona aid bütün cavablar və PIN-lər də silinir).</p>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="g-slide" data-slide="4">
+      <span class="g-step-tag"><span class="n">5</span>PIN İdarəetməsi</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 380 200" fill="none">
+          <circle cx="80" cy="100" r="60" fill="none" stroke="#6366f1" stroke-width="10" stroke-dasharray="280" stroke-dashoffset="70" stroke-linecap="round" transform="rotate(-90 80 100)"/>
+          <circle cx="80" cy="100" r="60" fill="none" stroke="#ffffff" stroke-opacity=".12" stroke-width="10"/>
+          <text x="80" y="108" font-size="26" font-weight="800" fill="#fff" text-anchor="middle" font-family="sans-serif">75%</text>
+          <rect x="180" y="40" width="190" height="22" rx="6" fill="#ffffff" fill-opacity=".08"/>
+          <rect x="180" y="74" width="190" height="22" rx="6" fill="#ffffff" fill-opacity=".08"/>
+          <rect x="180" y="108" width="190" height="22" rx="6" fill="#ffffff" fill-opacity=".08"/>
+          <rect x="338" y="40" width="32" height="22" rx="6" fill="#10b981" fill-opacity=".5"/>
+          <rect x="338" y="74" width="32" height="22" rx="6" fill="#f59e0b" fill-opacity=".5"/>
+          <rect x="338" y="108" width="32" height="22" rx="6" fill="#10b981" fill-opacity=".5"/>
+        </svg>
+      </div>
+      <h2>Hansı PIN kimə verilib?</h2>
+      <p>Bu bölmədə qeydiyyat zamanı avtomatik yaranan bütün PIN-lərin siyahısı var: hansı bağçaya aiddir, kimə (valideyn+övlad) təyin olunub, etibarlılıq tarix/saatı və statusu (aktiv/istifadə edilib). Bağça, status və mətn üzrə axtarış edə, "Redaktə" ilə tarix/saatı və ya statusu istənilən vaxt dəyişə bilərsiniz.</p>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="g-slide" data-slide="5">
+      <span class="g-step-tag"><span class="n">6</span>Şərhlər və əlavə imkanlar</span>
+      <div class="g-illust">
+        <svg viewBox="0 0 380 200" fill="none">
+          <rect x="10" y="10" width="280" height="50" rx="10" fill="#ffffff" fill-opacity=".08"/>
+          <rect x="26" y="24" width="120" height="8" rx="4" fill="#a5b4fc"/>
+          <rect x="26" y="40" width="200" height="6" rx="3" fill="#ffffff" fill-opacity=".4"/>
+          <rect x="10" y="70" width="280" height="50" rx="10" fill="#ffffff" fill-opacity=".06"/>
+          <rect x="26" y="84" width="120" height="8" rx="4" fill="#c4b5fd"/>
+          <rect x="26" y="100" width="170" height="6" rx="3" fill="#ffffff" fill-opacity=".4"/>
+          <circle cx="335" cy="160" r="30" fill="#25D366"/>
+          <path d="M335 145a15 15 0 0 0-13 22l-3 9 9-3a15 15 0 1 0 7-28z" fill="#fff"/>
+        </svg>
+      </div>
+      <h2>Valideyn rəyləri və dəstək</h2>
+      <p>"Şərhlər" bölməsində valideynlərin yazdığı sərbəst rəylər xronoloji ardıcıllıqla görünür. Panelin sol tərəfindəki düymə ilə menyunu daraldıb genişləndirə bilərsiniz. Texniki çətinlik yaranarsa, ekranın sağ alt küncündəki <strong>WhatsApp</strong> düyməsi ilə birbaşa dəstəklə əlaqə saxlaya bilərsiniz.</p>
+    </div>
+
+  </div>
+
+  <div class="g-nav">
+    <button class="g-btn g-btn-prev" id="g-prev" onclick="gPrev()" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>Geri
+    </button>
+    <span class="g-count" id="g-count">1 / 6</span>
+    <button class="g-btn g-btn-next" id="g-next" onclick="gNext()">
+      İrəli<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.g-slide');
+const total = slides.length;
+let current = 0;
+
+const progressEl = document.getElementById('g-progress');
+for(let i=0;i<total;i++){
+  const dot = document.createElement('div');
+  dot.className = 'g-dot';
+  dot.innerHTML = '<div class="g-dot-fill"></div>';
+  dot.onclick = () => goTo(i);
+  progressEl.appendChild(dot);
+}
+const dots = progressEl.querySelectorAll('.g-dot');
+
+function render(){
+  slides.forEach((s,i)=> s.classList.toggle('active', i===current));
+  dots.forEach((d,i)=>{
+    d.classList.toggle('active', i===current);
+    d.classList.toggle('done', i<current);
+  });
+  document.getElementById('g-prev').disabled = current===0;
+  const nextBtn = document.getElementById('g-next');
+  nextBtn.innerHTML = current===total-1
+    ? 'Panelə qayıt<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+    : 'İrəli<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+  document.getElementById('g-count').textContent = (current+1)+' / '+total;
+}
+function goTo(i){ current = Math.max(0, Math.min(total-1, i)); render(); }
+function gNext(){
+  if(current===total-1){ window.location.href = '/admin-dashboard.html'; return; }
+  current = Math.min(total-1, current+1); render();
+}
+function gPrev(){ current = Math.max(0, current-1); render(); }
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') gNext();
+  if(e.key==='ArrowLeft') gPrev();
+});
+render();
+</script>
+</body>
+</html>
