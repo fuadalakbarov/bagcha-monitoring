@@ -8,6 +8,9 @@ const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Render reverse proxy arxasında real IP üçün
+app.set('trust proxy', 1);
+
 // data/ qovluğu
 const dataDir = process.env.DATA_DIR || path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
