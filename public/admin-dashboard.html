@@ -367,6 +367,24 @@ tbody tr:hover td{background:#eef2ff !important}
   .kpi-row{grid-template-columns:1fr}
   .tab{padding:9px 9px;font-size:.76rem}
 }
+/* ── PRINT / PDF ── */
+@media print {
+  .sidebar, .topbar, .sec-head .right, .btn, #today-card,
+  .charts-row, #chart-region, .kpi-row, .modal-overlay,
+  .video-modal-overlay, .guide-modal-overlay { display:none!important; }
+  .layout { display:block!important; }
+  .content-area { display:block!important; }
+  main { padding:0!important; }
+  .tab-pane { display:block!important; }
+  body { background:#fff!important; color:#000!important; font-size:11pt; }
+  .card { box-shadow:none!important; border:1px solid #ccc!important; page-break-inside:avoid; }
+  table { width:100%; border-collapse:collapse; font-size:9pt; }
+  th,td { border:1px solid #ccc!important; padding:5px 8px!important; }
+  .print-title { display:block!important; font-size:14pt; font-weight:700; margin-bottom:12px; color:#000; }
+  .comment-item { border:1px solid #ddd!important; margin-bottom:8px; page-break-inside:avoid; }
+  .badge { border:1px solid #999!important; color:#000!important; background:#fff!important; }
+}
+.print-title { display:none; }
 </style>
 </head>
 <body>
@@ -424,11 +442,13 @@ tbody tr:hover td{background:#eef2ff !important}
       <div class="sec-head">
         <h2>Ümumi İcmal</h2>
         <div class="right">
+          <button class="btn btn-outline btn-sm" onclick="exportOverviewPDF()">PDF Endir</button>
           <button class="btn btn-outline btn-sm" onclick="exportExcel()">Excel Endir</button>
         </div>
       </div>
 
       <div class="kpi-row" id="kpi-row"></div>
+      <div class="print-title" id="print-overview-title"></div>
 
       <div class="charts-row">
         <div class="chart-card">
@@ -589,7 +609,14 @@ tbody tr:hover td{background:#eef2ff !important}
 
     <!-- TAB: ŞƏRHLƏR -->
     <div class="tab-pane" id="tab-comments">
-      <div class="sec-head"><h2>Valideyn Şərhləri</h2></div>
+      <div class="sec-head">
+        <h2>Valideyn Şərhləri</h2>
+        <div class="right">
+          <button class="btn btn-outline btn-sm" onclick="exportCommentsPDF()">PDF Endir</button>
+          <button class="btn btn-outline btn-sm" onclick="exportCommentsExcel()">Excel Endir</button>
+        </div>
+      </div>
+      <div class="print-title" id="print-comments-title"></div>
       <div id="comments-list"></div>
     </div>
 
@@ -1360,6 +1387,49 @@ async function logout() {
 function esc(t=''){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 // ─── EXCEL EXPORT ─────────────────────────────────────
+// ─── OVERVIEW PDF ────────────────────────────────────
+function exportOverviewPDF() {
+  const date = new Date().toLocaleDateString('az-AZ');
+  document.getElementById('print-overview-title').textContent =
+    `Gəncə-Daşkəsən Regional Təhsil İdarəsi — Bağçalarda Qidalanma Monitorinqi — ${date}`;
+  showTab('overview');
+  setTimeout(() => window.print(), 300);
+}
+
+// ─── COMMENTS PDF ────────────────────────────────────
+function exportCommentsPDF() {
+  const date = new Date().toLocaleDateString('az-AZ');
+  document.getElementById('print-comments-title').textContent =
+    `Valideyn Şərhləri — Gəncə-Daşkəsən Regional Təhsil İdarəsi — ${date}`;
+  showTab('comments');
+  setTimeout(() => window.print(), 300);
+}
+
+// ─── COMMENTS EXCEL ──────────────────────────────────
+function exportCommentsExcel() {
+  if (!dash?.comments?.length) { alert('Şərh yoxdur'); return; }
+  const date = new Date().toISOString().slice(0,10);
+  const esc = v => {
+    const s = (v===null||v===undefined)?'':String(v);
+    return s.includes(',')||s.includes('"')||s.includes('\n') ? '"'+s.replace(/"/g,'""')+'"' : s;
+  };
+  const headers = ['Valideyn','Bağça','Tarix','Şərh'];
+  const rows = dash.comments.map(c => [
+    c.parent || '—',
+    c.kindergarten_name || '—',
+    (c.submitted_at||'').slice(0,10),
+    c.comment || ''
+  ]);
+  const csv = '\uFEFF' + [headers, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `Serhlər_${date}.csv`;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function exportExcel() {
   if (!dash) return;
 
@@ -1426,8 +1496,8 @@ function exportExcel() {
   // ── 4. Şərhlər ──
   if (dash.comments && dash.comments.length) {
     setTimeout(() => {
-      const cRows = dash.comments.map(c => [c.kindergarten_name, c.submitted_at, c.comment]);
-      downloadCSV(toCSV(['Bagca','Tarix','Serh'], cRows), `Serhlər_${date}.csv`);
+      const cRows = dash.comments.map(c => [c.parent||'—', c.kindergarten_name, (c.submitted_at||'').slice(0,10), c.comment]);
+      downloadCSV(toCSV(['Valideyn','Bagca','Tarix','Serh'], cRows), `Serhlər_${date}.csv`);
     }, 1200);
   }
 }
