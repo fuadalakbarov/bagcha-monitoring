@@ -300,7 +300,7 @@ input::placeholder{color:#aab4c4;}
       <div class="slots-wrap" id="slots-wrap">
         <!-- slotlar JS ilə yüklənir -->
       </div>
-      <div class="slot-note" id="slot-note">Tarix və bağça seçdikdən sonra mövcud saatlar yüklənəcək</div>
+      <div class="slot-note" id="slot-note">Tarix və bağça seçdikdən sonra mövcud saat yüklənəcək</div>
     </div>
 
     <div class="error" id="form-error"></div>
@@ -449,46 +449,48 @@ function setMinDate() {
 // ── Mövcud saatları yüklə ────────────────────────────────────────
 async function loadSlots() {
   const date = document.getElementById('appt_date').value;
-  const kgId = document.getElementById('kindergarten_id').value;
+  const kgId = document.getElementById('kindergarten_id').value || selectedKgId;
   const wrap = document.getElementById('slots-wrap');
   const note = document.getElementById('slot-note');
 
   if (!date || !kgId) {
     wrap.innerHTML = '';
-    note.textContent = 'Tarix və bağça seçdikdən sonra mövcud saatlar yüklənəcək';
+    note.textContent = 'Tarix və bağça seçdikdən sonra mövcud saat yüklənəcək';
+    note.style.color = '';
     selectedHour = null;
     return;
   }
 
   note.textContent = 'Yüklənir...';
   wrap.innerHTML = '';
+
   try {
     const r = await fetch(`/api/register/slots?date=${date}&kindergarten_id=${kgId}`);
-    const d = await r.json();
-    const all = d.all || [];
-    const freeIds = (d.free || []).map(s => s.id);
+    const { free } = await r.json();
+    const available = free && free.length > 0;
 
-    all.forEach(slot => {
-      const el = document.createElement('div');
-      el.className = 'slot-btn';
-      el.id = `slot-${slot.id}`;
-      el.textContent = `🕐 ${slot.label}`;
-      if (!freeIds.includes(slot.id)) {
-        el.classList.add('disabled');
-        if (selectedHour === slot.id) selectedHour = null;
-      } else {
-        el.onclick = () => selectSlot(slot.id);
-      }
-      wrap.appendChild(el);
-    });
+    const el = document.createElement('div');
+    el.className = 'slot-btn';
+    el.id = 'slot-1';
+    el.innerHTML = `<svg style="width:17px;height:17px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span>11:30 – 13:00</span>`;
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.gap = '8px';
 
-    if (freeIds.length === 0) {
-      note.textContent = 'Bu tarix üçün boş saat yoxdur. Başqa tarix seçin.';note.style.color='#dc2626';
+    if (!available) {
+      el.classList.add('disabled');
+      el.querySelector('span').textContent = '11:30 – 13:00 (Tutulub)';
+      selectedHour = null;
+      note.textContent = 'Bu tarix üçün randevu artıq tutulub. Başqa tarix seçin.';
+      note.style.color = '#dc2626';
     } else {
-      note.textContent = `${freeIds.length} boş saat mövcuddur`;note.style.color='#16a34a';
+      el.onclick = () => selectSlot(1);
+      note.textContent = 'Randevu saatı mövcuddur. Seçmək üçün klikləyin.';
+      note.style.color = '#16a34a';
     }
+    wrap.appendChild(el);
   } catch {
-    note.textContent = 'Saatlar yüklənə bilmədi.';
+    note.textContent = 'Saat yüklənə bilmədi.';
   }
 }
 
@@ -534,7 +536,7 @@ async function submitForm() {
     const r = await fetch('/api/register', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ surname, name, patronymic, phone, child_surname, child_name, child_patronymic, kindergarten_id, appt_date, appt_hour: selectedHour })
+      body: JSON.stringify({ surname, name, patronymic, phone, child_surname, child_name, child_patronymic, kindergarten_id, appt_date })
     });
     const d = await r.json();
 
