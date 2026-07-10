@@ -9,6 +9,13 @@ function generatePin() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 
+// Real IP-ni al (Render reverse proxy arxasındadır)
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return req.socket?.remoteAddress || 'unknown';
+}
+
 // ── POST /api/register ────────────────────────────────────────────
 router.post('/register', async (req, res) => {
   const { surname, name, patronymic, phone,
@@ -27,6 +34,20 @@ router.post('/register', async (req, res) => {
   const today = new Date().toISOString().slice(0, 10);
   if (!appt_date || appt_date < today)
     return res.status(400).json({ error: 'Tarix bugündən az ola bilməz' });
+
+  // ── IP məhdudiyyəti ──────────────────────────────────
+  const clientIp = getClientIp(req);
+  try {
+    const ipCheck = await query('registrations', { ip_address: `eq.${clientIp}` });
+    if (ipCheck.length >= 1) {
+      return res.status(429).json({
+        error: 'Bu cihazdan artıq qeydiyyat keçirilmişdir. Hər cihazdan yalnız bir dəfə qeydiyyat mümkündür.'
+      });
+    }
+  } catch(e) {
+    // ip_address sütunu hələ yoxdursa keçək (SQL əlavə edilməmişsə)
+    console.warn('IP check skipped:', e.message);
+  }
 
   try {
     const kgs = await query('kindergartens', { id: `eq.${parseInt(kindergarten_id)}` });
@@ -55,7 +76,8 @@ router.post('/register', async (req, res) => {
       child_surname: child_surname.trim(), child_name: child_name.trim(),
       child_patronymic: child_patronymic.trim(),
       kindergarten_id: kg.id,
-      appt_date, appt_hour: 1, pin_code: pin
+      appt_date, appt_hour: 1, pin_code: pin,
+      ip_address: clientIp
     });
 
     await insert('survey_tokens', {
