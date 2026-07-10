@@ -903,16 +903,27 @@ function renderOverviewTable() {
     tb.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:30px">Uyğun nəticə tapılmadı</td></tr>';
     return;
   }
+  // Adaptiv: heç iştirak yoxdursa sadə görünüş
+  const maxPart = Math.max(...rows.map(k=>k.participant_count||0));
   tb.innerHTML = rows.map(k => `
     <tr>
-      <td><strong>${esc(k.name)}</strong></td>
+      <td>
+        <span class="kg-link" onclick="openKgDetail(${k.id})" style="cursor:pointer;color:var(--green);font-weight:700;text-decoration:underline;text-decoration-style:dotted">
+          ${esc(k.name)}
+        </span>
+      </td>
       <td>${esc(k.region)}</td>
-      <td>${k.participant_count||0}</td>
-      <td>${scoreCell(k.avg_volume)}</td>
-      <td>${scoreCell(k.avg_quality)}</td>
-      <td>${scoreCell(k.avg_taste)}</td>
-      <td>${scoreCell(k.avg_hygiene)}</td>
-      <td>${scoreCell(k.overall_avg)}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <strong>${k.participant_count||0}</strong>
+          ${maxPart>0?`<div style="flex:1;min-width:40px;max-width:80px;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.round((k.participant_count||0)/maxPart*100)}%;background:var(--green);border-radius:3px"></div></div>`:''}
+        </div>
+      </td>
+      <td>${k.participant_count ? scoreCell(k.avg_volume) : '<span style="color:#cbd5e1">—</span>'}</td>
+      <td>${k.participant_count ? scoreCell(k.avg_quality) : '<span style="color:#cbd5e1">—</span>'}</td>
+      <td>${k.participant_count ? scoreCell(k.avg_taste) : '<span style="color:#cbd5e1">—</span>'}</td>
+      <td>${k.participant_count ? scoreCell(k.avg_hygiene) : '<span style="color:#cbd5e1">—</span>'}</td>
+      <td>${k.participant_count ? scoreCell(k.overall_avg) : '<span style="color:#cbd5e1">—</span>'}</td>
       <td>${targetCell(k.overall_avg, k.target, k.participant_count)}</td>
       <td>${statusBadge(k.overall_avg, k.participant_count)}</td>
     </tr>`).join('');
@@ -1240,12 +1251,56 @@ function renderComments() {
   }
   el.innerHTML = dash.comments.map(c=>`
     <div class="comment-item">
-      <div class="comment-meta">${esc(c.kindergarten_name)} &nbsp;·&nbsp; ${c.submitted_at}</div>
+      <div class="comment-meta">
+        <strong>${esc(c.parent)}</strong>
+        &nbsp;·&nbsp; ${esc(c.kindergarten_name)}
+        &nbsp;·&nbsp; ${(c.submitted_at||'').slice(0,10)}
+      </div>
       <div class="comment-text">${esc(c.comment)}</div>
     </div>`).join('');
 }
 
 // ─── KG MODAL ────────────────────────────────────────
+function openKgDetail(id) {
+  const k = dash.kindergartens.find(x=>x.id===id);
+  if (!k) return;
+  document.getElementById('kg-detail-title').textContent = k.name;
+  document.getElementById('kg-detail-sub').textContent =
+    `${k.region} · ${k.participant_count||0} iştirakçı · Ümumi orta: ${k.overall_avg||'—'}`;
+
+  const body = document.getElementById('kg-detail-body');
+  const LABELS = ['Həcm','Keyfiyyət','Dad','Gigiyena'];
+  const SCORE_LBL = {1:'Qeyri-kafi',2:'Qənaətbəxş',3:'Əla'};
+  const SCORE_COL = {1:'#dc2626',2:'#d97706',3:'#16a34a'};
+
+  if (!k.individual || !k.individual.length) {
+    body.innerHTML = '<div class="empty">Bu bağça üçün hələ rəy yoxdur</div>';
+  } else {
+    body.innerHTML = k.individual.map((r,i)=>`
+      <div style="border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--bg)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:700;color:var(--text)">${i+1}. ${esc(r.parent)}</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px">
+              Övlad: ${esc(r.child)} · Tel: ${esc(r.phone)} · ${(r.submitted_at||'').slice(0,10)}
+            </div>
+          </div>
+          <div style="font-weight:800;font-size:1.1rem;color:${SCORE_COL[Math.round(r.overall)]||'#64748b'}">
+            ${r.overall} / 3
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px">
+          ${['volume_rating','quality_rating','taste_rating','hygiene_rating'].map((f,i)=>`
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;text-align:center">
+              <div style="font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em">${LABELS[i]}</div>
+              <div style="font-weight:800;font-size:1rem;color:${SCORE_COL[r[f]]||'#64748b'};margin-top:4px">${SCORE_LBL[r[f]]||r[f]}</div>
+            </div>`).join('')}
+        </div>
+        ${r.comment?`<div style="margin-top:10px;padding:10px 14px;background:#eef2ff;border-radius:8px;font-size:.86rem;color:var(--text);line-height:1.5">💬 ${esc(r.comment)}</div>`:''}
+      </div>`).join('');
+  }
+  document.getElementById('kg-detail-modal').classList.add('open');
+}
 function openAddModal() {
   document.getElementById('modal-title').textContent = 'Bağça Əlavə Et';
   document.getElementById('modal-id').value = '';
@@ -1453,6 +1508,18 @@ setInterval(refreshAll, 60000);
     <svg viewBox="0 0 32 32"><path d="M16.001 3C9.107 3 3.5 8.607 3.5 15.5c0 2.49.728 4.8 1.98 6.75L4 29l6.92-1.815A12.43 12.43 0 0 0 16 28c6.894 0 12.5-5.607 12.5-12.5S22.894 3 16.001 3zm0 22.7a10.16 10.16 0 0 1-5.18-1.42l-.372-.222-4.108 1.077 1.096-4.005-.243-.41a10.13 10.13 0 0 1-1.494-5.22c0-5.626 4.578-10.2 10.301-10.2 5.625 0 10.2 4.575 10.2 10.2.001 5.626-4.577 10.2-10.2 10.2zm5.598-7.642c-.307-.154-1.817-.897-2.099-1-.282-.103-.487-.154-.692.154-.205.308-.794 1-.973 1.205-.179.205-.358.231-.665.077-.307-.154-1.296-.477-2.469-1.523-.913-.814-1.529-1.82-1.708-2.128-.179-.308-.019-.474.135-.628.139-.139.307-.36.461-.539.154-.18.205-.308.307-.513.103-.205.051-.385-.026-.539-.077-.154-.692-1.667-.948-2.283-.25-.6-.504-.519-.692-.529-.179-.009-.384-.011-.589-.011-.205 0-.539.077-.82.385-.282.308-1.077 1.052-1.077 2.565s1.103 2.975 1.257 3.18c.154.205 2.171 3.313 5.262 4.646.735.317 1.309.507 1.756.649.738.235 1.41.202 1.941.123.592-.088 1.817-.743 2.073-1.461.256-.718.256-1.333.179-1.461-.077-.128-.282-.205-.589-.36z"/></svg>
   </span>
 </a>
+
+<!-- MODAL: Bağça fərdi cavablar -->
+<div class="modal-overlay" id="kg-detail-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:720px;width:95%;max-height:85vh;overflow-y:auto">
+    <h3 id="kg-detail-title" style="margin-bottom:4px"></h3>
+    <p id="kg-detail-sub" style="color:var(--muted);font-size:.82rem;margin-bottom:18px"></p>
+    <div id="kg-detail-body"></div>
+    <div style="margin-top:18px;text-align:right">
+      <button class="btn btn-outline" onclick="document.getElementById('kg-detail-modal').classList.remove('open')">Bağla</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
