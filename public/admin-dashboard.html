@@ -467,6 +467,16 @@ tbody tr:hover td{background:#eef2ff !important}
               <option value="taste">Dad</option>
               <option value="hygiene">Gigiyena</option>
             </select>
+            <div id="chart-scroll-btns" style="display:none;gap:4px">
+              <button onclick="document.getElementById('chart-bar-scroll').scrollBy({top:-150,behavior:'smooth'})"
+                style="width:32px;height:32px;border-radius:8px;border:1px solid #e0e7ff;background:#fff;color:#6366f1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(99,102,241,.2)" title="Yuxarı">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="m18 15-6-6-6 6"/></svg>
+              </button>
+              <button onclick="document.getElementById('chart-bar-scroll').scrollBy({top:150,behavior:'smooth'})"
+                style="width:32px;height:32px;border-radius:8px;border:1px solid #e0e7ff;background:#fff;color:#6366f1;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(99,102,241,.2)" title="Aşağı">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </div>
           </div>
         </div>
         <p class="chart-sub" id="chart-bar-subtitle" style="padding:0 18px">Rayon seçin → həmin rayonun bağçaları göstəriləcək. Rayon seçilmədikdə rayonlar müqayisəsi görünür.</p>
@@ -1062,6 +1072,8 @@ function renderBarChart() {
     wrap.style.height = 'auto';
     scrollEl.style.height = 'auto';
     scrollEl.style.overflowY = 'hidden';
+    const btns = document.getElementById('chart-scroll-btns');
+    if (btns) btns.style.display = 'none';
 
     barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
       type:'bar',
@@ -1099,13 +1111,15 @@ function renderBarChart() {
   }
   subtitle.textContent = `${reg} · ${kg.length} bağça · ${SCORE_LBL[scoreKey]} üzrə (yüksəkdən aşağıya)`;
   scrollEl.scrollTop = 0;
-
-  // Canvas hündürlüyü: hər bağça 36px, max 420px-ə kilidlə → scroll aktiv olur
   const totalH = Math.max(kg.length * 36 + 60, 240);
-  const maxH   = 420;
+  const maxH = 420;
+  // Canvas-a birbaşa hündürlük ver — Chart.js bunu hörmət edir
   wrap.style.height = totalH + 'px';
   scrollEl.style.height = Math.min(totalH, maxH) + 'px';
   scrollEl.style.overflowY = totalH > maxH ? 'auto' : 'hidden';
+  // Scroll düymələri — chart uzunsa göstər
+  const btns = document.getElementById('chart-scroll-btns');
+  if (btns) btns.style.display = totalH > maxH ? 'flex' : 'none';
 
   barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
     type:'bar',
