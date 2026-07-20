@@ -369,20 +369,57 @@ tbody tr:hover td{background:#eef2ff !important}
 }
 /* ── PRINT / PDF ── */
 @media print {
-  .sidebar, .topbar, .sec-head .right, .btn, #today-card,
-  .charts-row, #chart-region, .kpi-row, .modal-overlay,
-  .video-modal-overlay, .guide-modal-overlay { display:none!important; }
+  /* Lazımsız elementlər gizlənir */
+  .sidebar, .topbar, .sec-head .right, .btn,
+  #today-card, .charts-row, #chart-region,
+  .kpi-row, .card-head select, .card-head input,
+  .modal-overlay, .video-modal-overlay, .guide-modal-overlay,
+  #chart-bar-wrap, #chart-bar-scroll, #chart-trend,
+  .chart-card, .chart-wrap { display:none!important; }
+
+  /* Aktiv olmayan tablar gizlənir */
+  .tab-pane:not(.active) { display:none!important; }
+  .tab-pane.active { display:block!important; }
+
+  /* Layout düzəldilir */
   .layout { display:block!important; }
-  .content-area { display:block!important; }
-  main { padding:0!important; }
-  .tab-pane { display:block!important; }
-  body { background:#fff!important; color:#000!important; font-size:11pt; }
-  .card { box-shadow:none!important; border:1px solid #ccc!important; page-break-inside:avoid; }
-  table { width:100%; border-collapse:collapse; font-size:9pt; }
-  th,td { border:1px solid #ccc!important; padding:5px 8px!important; }
-  .print-title { display:block!important; font-size:14pt; font-weight:700; margin-bottom:12px; color:#000; }
-  .comment-item { border:1px solid #ddd!important; margin-bottom:8px; page-break-inside:avoid; }
-  .badge { border:1px solid #999!important; color:#000!important; background:#fff!important; }
+  .content-area { display:block!important; width:100%!important; }
+  main { padding:8px!important; max-width:100%!important; }
+
+  /* Rənglər */
+  body { background:#fff!important; color:#000!important;
+    font-size:9pt!important; font-family:Arial,sans-serif!important; }
+  * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+
+  /* Kart */
+  .card { box-shadow:none!important; border:1px solid #ddd!important;
+    margin-bottom:8px!important; page-break-inside:avoid; padding:10px!important; }
+  .card-head { margin-bottom:6px!important; }
+  .card-head h3 { font-size:10pt!important; }
+
+  /* Cədvəl */
+  table { width:100%!important; border-collapse:collapse!important; font-size:8pt!important; }
+  th { background:#4f46e5!important; color:#fff!important;
+    padding:5px 6px!important; text-align:left!important; font-size:7.5pt!important; }
+  td { border:1px solid #e2e8f0!important; padding:4px 6px!important; }
+  tr:nth-child(even) td { background:#f8fafc!important; }
+
+  /* Badge */
+  .badge { border:1px solid #999!important; padding:2px 6px!important; font-size:7pt!important; }
+
+  /* Başlıq */
+  .print-title { display:block!important; font-size:12pt!important; font-weight:700!important;
+    margin-bottom:10px!important; color:#1e1b4b!important; border-bottom:2px solid #4f46e5!important;
+    padding-bottom:6px!important; }
+
+  /* Şərhlər */
+  .comment-item { border:1px solid #e2e8f0!important; margin-bottom:6px!important;
+    page-break-inside:avoid!important; padding:8px!important; }
+  .comment-meta { font-size:7.5pt!important; color:#555!important; margin-bottom:3px!important; }
+  .comment-text { font-size:8.5pt!important; }
+
+  /* Səhifə parametrləri */
+  @page { margin:1.2cm; size:A4 landscape; }
 }
 .print-title { display:none; }
 #chart-bar-scroll{scrollbar-width:thin;scrollbar-color:#a5b4fc #f1f5f9}
@@ -1683,77 +1720,103 @@ function exportCommentsExcel() {
 
 function exportExcel() {
   if (!dash) return;
-
-  // CSV-to-Excel: BOM + tab-separated, Excel avtomatik tanıyır
-  function toCSV(headers, rows) {
-    const esc = v => {
-      const s = (v === null || v === undefined) ? '' : String(v);
-      return s.includes(',') || s.includes('"') || s.includes('\n')
-        ? '"' + s.replace(/"/g,'""') + '"' : s;
-    };
-    return [headers, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
-  }
-
-  function downloadCSV(csvStr, filename) {
-    const BOM = '\uFEFF';
-    const blob = new Blob([BOM + csvStr], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  const date = new Date().toISOString().slice(0,10);
-
-  // ── 1. Bağçalar üzrə Nəticələr ──
-  const kgHeaders = ['Bagcanin Adi','Region','Istirakci Sayi','Hecm Ort','Keyfiyyət Ort','Dad Ort','Gigiyena Ort','Umumi Ortalama','Hedəf Bal','Status'];
-  const kgRows = dash.kindergartens.map(k => {
-    let status = 'Melumat yoxdur';
-    if (k.participant_count > 0) {
-      status = k.overall_avg >= 2.5 ? 'Normal' : k.overall_avg >= 1.8 ? 'Diqqet' : 'Alarm';
-    }
-    return [k.name, k.region, k.participant_count||0,
-      k.avg_volume||'', k.avg_quality||'', k.avg_taste||'', k.avg_hygiene||'',
-      k.overall_avg||'', k.target||2.5, status];
-  });
-  downloadCSV(toCSV(kgHeaders, kgRows), `Bagcalar_${date}.csv`);
-
-  // ── 2. KPI Xulasesi (100ms gecikmə ilə) ──
-  const s = dash.stats;
-  const pct = s.total_pins > 0 ? Math.round(s.used_pins / s.total_pins * 100) : 0;
-  const avgAll = dash.kindergartens.filter(k=>k.participant_count>0);
-  const globalAvg = avgAll.length ? (avgAll.reduce((a,k)=>a+parseFloat(k.overall_avg||0),0)/avgAll.length).toFixed(2) : '';
-  const kpiRows = [
-    ['Umumi Cavab Sayi', s.total_responses||0],
-    ['Bagca Sayi', s.total_kg||0],
-    ['Istifade Edilmis PIN', s.used_pins||0],
-    ['Aktiv PIN', s.active_pins||0],
-    ['Istirak Faizi (%)', pct],
-    ['Qlobal Ortalama Bal', globalAvg],
-    ['Ixrac Tarixi', new Date().toLocaleString()]
-  ];
-  setTimeout(() => downloadCSV(toCSV(['Gostərici','Dəyər'], kpiRows), `KPI_${date}.csv`), 400);
-
-  // ── 3. Trend ──
-  if (dash.trend && dash.trend.length) {
-    setTimeout(() => {
-      const tRows = dash.trend.map(t => [t.day, t.avg_score, t.count]);
-      downloadCSV(toCSV(['Tarix','Ortalama Bal','Cavab Sayi'], tRows), `Trend_${date}.csv`);
-    }, 800);
-  }
-
-  // ── 4. Şərhlər ──
-  if (dash.comments && dash.comments.length) {
-    setTimeout(() => {
-      const cRows = dash.comments.map(c => [c.parent||'—', c.kindergarten_name, (c.submitted_at||'').slice(0,10), c.comment]);
-      downloadCSV(toCSV(['Valideyn','Bagca','Tarix','Serh'], cRows), `Serhlər_${date}.csv`);
-    }, 1200);
-  }
+  if (typeof XLSX === 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = _buildExcel;
+    document.head.appendChild(s);
+  } else _buildExcel();
 }
 
-// Close modal on overlay click
+function exportCommentsExcel() {
+  if (!dash?.comments?.length) { alert('Şərh yoxdur'); return; }
+  if (typeof XLSX === 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = _buildCommentsExcel;
+    document.head.appendChild(s);
+  } else _buildCommentsExcel();
+}
+
+function _buildExcel() {
+  const wb = XLSX.utils.book_new();
+  const date = new Date().toISOString().slice(0,10);
+
+  // ── Vərəq 1: Bağçalar ──
+  const kgData = [
+    ['Bağçanın Adı','Region','İştirakçı Sayı','Həcm Ortalaması','Keyfiyyət Ortalaması','Dad Ortalaması','Gigiyena Ortalaması','Ümumi Ortalama','Hədəf Bal','Status']
+  ];
+  dash.kindergartens.forEach(k => {
+    let status = 'Məlumat yoxdur';
+    if (k.participant_count > 0)
+      status = k.overall_avg >= 2.5 ? 'Normal' : k.overall_avg >= 1.8 ? 'Diqqət' : 'Alarm';
+    kgData.push([
+      k.name, k.region, k.participant_count||0,
+      k.avg_volume||'', k.avg_quality||'', k.avg_taste||'', k.avg_hygiene||'',
+      k.overall_avg||'', k.target||2.5, status
+    ]);
+  });
+  const wsKg = XLSX.utils.aoa_to_sheet(kgData);
+  wsKg['!cols'] = [40,14,14,14,18,12,14,14,10,10].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, wsKg, 'Bağçalar');
+
+  // ── Vərəq 2: KPI Xülasə ──
+  const s = dash.stats;
+  const pct = s.total_pins > 0 ? Math.round(s.used_pins/s.total_pins*100) : 0;
+  const avgAll = dash.kindergartens.filter(k=>k.participant_count>0);
+  const globalAvg = avgAll.length ? (avgAll.reduce((a,k)=>a+parseFloat(k.overall_avg||0),0)/avgAll.length).toFixed(2) : '';
+  const kpiData = [
+    ['Göstərici','Dəyər'],
+    ['Ümumi Cavab Sayı', s.total_responses||0],
+    ['Bağça Sayı', s.total_kg||0],
+    ['İstifadə Edilmiş PIN', s.used_pins||0],
+    ['Aktiv PIN', s.active_pins||0],
+    ['İştirak Faizi (%)', pct],
+    ['Qlobal Ortalama Bal', globalAvg],
+    ['İxrac Tarixi', new Date().toLocaleString('az-AZ')]
+  ];
+  const wsKpi = XLSX.utils.aoa_to_sheet(kpiData);
+  wsKpi['!cols'] = [{wch:28},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsKpi, 'KPI Xülasə');
+
+  // ── Vərəq 3: Trend ──
+  if (dash.trend?.length) {
+    const tData = [['Tarix','Ortalama Bal','Cavab Sayı']];
+    dash.trend.forEach(t => tData.push([t.day, t.avg_score, t.count]));
+    const wsTrend = XLSX.utils.aoa_to_sheet(tData);
+    wsTrend['!cols'] = [{wch:14},{wch:16},{wch:12}];
+    XLSX.utils.book_append_sheet(wb, wsTrend, 'Trend');
+  }
+
+  // ── Vərəq 4: Şərhlər ──
+  if (dash.comments?.length) {
+    const cData = [['Valideyn','Bağça','Tarix','Şərh']];
+    dash.comments.forEach(c => cData.push([
+      c.parent||'—', c.kindergarten_name||'—',
+      (c.submitted_at||'').slice(0,10), c.comment||''
+    ]));
+    const wsCom = XLSX.utils.aoa_to_sheet(cData);
+    wsCom['!cols'] = [{wch:28},{wch:40},{wch:12},{wch:60}];
+    XLSX.utils.book_append_sheet(wb, wsCom, 'Şərhlər');
+  }
+
+  XLSX.writeFile(wb, `Monitorinq_${date}.xlsx`);
+}
+
+function _buildCommentsExcel() {
+  if (!dash?.comments?.length) { alert('Şərh yoxdur'); return; }
+  const wb = XLSX.utils.book_new();
+  const date = new Date().toISOString().slice(0,10);
+  const data = [['Valideyn','Bağça','Tarix','Şərh']];
+  dash.comments.forEach(c => data.push([
+    c.parent||'—', c.kindergarten_name||'—',
+    (c.submitted_at||'').slice(0,10), c.comment||''
+  ]));
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:28},{wch:40},{wch:12},{wch:60}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Şərhlər');
+  XLSX.writeFile(wb, `Serhlər_${date}.xlsx`);
+}
 document.getElementById('kg-modal').addEventListener('click', function(e){
   if(e.target===this) closeModal();
 });
