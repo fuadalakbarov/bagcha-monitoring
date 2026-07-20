@@ -465,11 +465,11 @@ tbody tr:hover td{background:#eef2ff !important}
           </div>
         </div>
         <p class="chart-sub" id="chart-bar-subtitle" style="padding:0 18px">Rayon seçin → həmin rayonun bağçaları göstəriləcək. Rayon seçilmədikdə rayonlar müqayisəsi görünür.</p>
-        <div style="position:relative;overflow:hidden;border-radius:0 0 12px 12px">
+        <div style="position:relative;border-radius:0 0 12px 12px;padding-right:32px">
           <div id="chart-bar-scroll" style="max-height:480px;overflow-y:auto;scroll-behavior:smooth;padding:4px 18px 18px">
             <div id="chart-bar-wrap" class="chart-wrap" style="min-height:280px"><canvas id="chart-bar"></canvas></div>
           </div>
-          <div id="chart-scroll-btns" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);flex-direction:column;gap:6px;z-index:20">
+          <div id="chart-scroll-btns" style="display:none;position:absolute;right:-14px;top:50%;transform:translateY(-50%);flex-direction:column;gap:6px;z-index:20">
             <button onclick="document.getElementById('chart-bar-scroll').scrollBy({top:-120,behavior:'smooth'})"
               style="width:34px;height:34px;border-radius:50%;border:none;background:#6366f1;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(99,102,241,.5);display:flex;align-items:center;justify-content:center;opacity:.9"
               title="Yuxarı">
