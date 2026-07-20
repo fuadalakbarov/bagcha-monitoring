@@ -450,22 +450,35 @@ tbody tr:hover td{background:#eef2ff !important}
       <div class="kpi-row" id="kpi-row"></div>
       <div class="print-title" id="print-overview-title"></div>
 
-      <div class="charts-row">
-        <div class="chart-card">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-head" style="flex-wrap:wrap;gap:12px">
           <h3>Bağçalar üzrə Ortalama Bal</h3>
-          <p class="chart-sub">Hər bağçanın 4 göstərici üzrə müqayisəsi (0–3 şkala)</p>
-          <div class="chart-wrap"><canvas id="chart-bar"></canvas></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <select id="chart-region-filter" onchange="renderBarChart()" style="min-width:140px"><option value="">Bütün rayonlar</option></select>
+            <select id="chart-score-filter" onchange="renderBarChart()" style="min-width:130px">
+              <option value="overall">Ümumi bal</option>
+              <option value="volume">Həcm</option>
+              <option value="quality">Keyfiyyət</option>
+              <option value="taste">Dad</option>
+              <option value="hygiene">Gigiyena</option>
+            </select>
+          </div>
         </div>
-        <div class="chart-card">
-          <h3>Son 7 Günün Trendi</h3>
-          <p class="chart-sub">Gündəlik ortalama bal və cavab sayı</p>
-          <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
-        </div>
+        <p class="chart-sub" style="padding:0 18px">Hər bağçanın seçilmiş göstərici üzrə müqayisəsi (0–3 şkala)</p>
+        <div class="chart-wrap" style="padding:4px 18px 18px;min-height:280px"><canvas id="chart-bar"></canvas></div>
       </div>
 
       <div class="card" style="margin-bottom:20px">
-        <div class="card-head"><h3>Region üzrə Müqayisə</h3></div>
-        <div class="chart-wrap" style="padding:18px;height:260px"><canvas id="chart-region"></canvas></div>
+        <div class="card-head" style="flex-wrap:wrap;gap:12px">
+          <h3>Trend Analizi</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <select id="trend-region-filter" onchange="renderTrendChart()" style="min-width:140px">
+              <option value="">Ümumi trend</option>
+            </select>
+          </div>
+        </div>
+        <p class="chart-sub" style="padding:0 18px">Seçilmiş rayon/ümumi üzrə gündəlik ortalama bal dəyişimi</p>
+        <div class="chart-wrap" style="padding:4px 18px 18px;height:260px"><canvas id="chart-trend"></canvas></div>
       </div>
 
       <div class="card">
@@ -473,6 +486,13 @@ tbody tr:hover td{background:#eef2ff !important}
           <h3>Bağçalar üzrə Monitorinq</h3>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
             <select id="ov-region-filter" onchange="renderOverviewTable()" style="min-width:140px"><option value="">Bütün rayonlar</option></select>
+            <select id="ov-rating-filter" onchange="renderOverviewTable()" style="min-width:130px">
+              <option value="">Bütün reytinqlər</option>
+              <option value="alarm">Alarm (≤1.8)</option>
+              <option value="diqqet">Diqqət (1.8–2.5)</option>
+              <option value="normal">Normal (≥2.5)</option>
+              <option value="nodata">Məlumat yoxdur</option>
+            </select>
             <input type="text" id="ov-search" oninput="renderOverviewTable()" placeholder="Bağça axtar..." style="min-width:180px">
           </div>
         </div>
@@ -920,9 +940,14 @@ function targetCell(avg, target, count) {
 
 function renderOverviewTable() {
   const reg = (document.getElementById('ov-region-filter')||{}).value || '';
+  const rating = (document.getElementById('ov-rating-filter')||{}).value || '';
   const q = ((document.getElementById('ov-search')||{}).value || '').trim().toLowerCase();
   let rows = dash.kindergartens;
   if (reg) rows = rows.filter(k=>k.region===reg);
+  if (rating==='alarm') rows = rows.filter(k=>k.participant_count>0 && k.overall_avg<=1.8);
+  else if (rating==='diqqet') rows = rows.filter(k=>k.participant_count>0 && k.overall_avg>1.8 && k.overall_avg<2.5);
+  else if (rating==='normal') rows = rows.filter(k=>k.participant_count>0 && k.overall_avg>=2.5);
+  else if (rating==='nodata') rows = rows.filter(k=>!k.participant_count);
   if (q) rows = rows.filter(k=>k.name.toLowerCase().includes(q));
 
   const tb = document.getElementById('overview-table');
@@ -976,106 +1001,142 @@ function renderKgManageTable() {
 }
 
 // ─── CHARTS ──────────────────────────────────────────
-let barChart, trendChart;
+// charts declared in renderBarChart/renderTrendChart
 function renderCharts() {
-  const kg = dash.kindergartens.filter(k=>k.participant_count>0);
+  renderBarChart();
+  renderTrendChart();
+}
 
-  // Bar chart
+// ─── BAR CHART (filterli) ─────────────────────────────
+let barChart;
+function renderBarChart() {
+  const reg = (document.getElementById('chart-region-filter')||{}).value || '';
+  const scoreKey = (document.getElementById('chart-score-filter')||{}).value || 'overall';
+  const SCORE_MAP = { overall:'overall_avg', volume:'avg_volume', quality:'avg_quality', taste:'avg_taste', hygiene:'avg_hygiene' };
+  const SCORE_LBL = { overall:'Ümumi bal', volume:'Həcm', quality:'Keyfiyyət', taste:'Dad', hygiene:'Gigiyena' };
+
+  let kg = dash.kindergartens.filter(k=>k.participant_count>0);
+  if (reg) kg = kg.filter(k=>k.region===reg);
+  kg = kg.sort((a,b)=>(b[SCORE_MAP[scoreKey]]||0)-(a[SCORE_MAP[scoreKey]]||0));
+
   const bCtx = document.getElementById('chart-bar').getContext('2d');
   if (barChart) barChart.destroy();
+
+  if (!kg.length) {
+    bCtx.canvas.parentElement.innerHTML = '<div class="empty" style="padding:40px;text-align:center">Bu rayon üçün məlumat yoxdur</div>';
+    return;
+  }
+
+  const COLORS = { overall:'#6366f1', volume:'#6366f1', quality:'#8b5cf6', taste:'#f59e0b', hygiene:'#14b8a6' };
   barChart = new Chart(bCtx, {
     type: 'bar',
     data: {
-      labels: kg.map(k=>k.name.length>14?k.name.slice(0,14)+'…':k.name),
-      datasets: [
-        { label:'Həcm', data:kg.map(k=>k.avg_volume||0), backgroundColor:'#6366f1', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
-        { label:'Keyfiyyət', data:kg.map(k=>k.avg_quality||0), backgroundColor:'#8b5cf6', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
-        { label:'Dad', data:kg.map(k=>k.avg_taste||0), backgroundColor:'#f59e0b', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
-        { label:'Gigiyena', data:kg.map(k=>k.avg_hygiene||0), backgroundColor:'#14b8a6', borderRadius:5, borderSkipped:false, maxBarThickness:22 },
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      scales:{ y:{ min:0, max:3, ticks:{stepSize:.5}, grid:{color:'#eef0fa'}, border:{display:false} },
-               x:{grid:{display:false}, border:{display:false}} },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:14} } }
-    }
-  });
-
-  // Trend chart
-  const tCtx = document.getElementById('chart-trend').getContext('2d');
-  if (trendChart) trendChart.destroy();
-  const trend = dash.trend || [];
-  trendChart = new Chart(tCtx, {
-    type: 'line',
-    data: {
-      labels: trend.length ? trend.map(t=>t.day.slice(5)) : ['—'],
-      datasets: [{
-        label:'Gündəlik ortalama',
-        data: trend.length ? trend.map(t=>t.avg_score) : [0],
-        borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.12)',
-        borderWidth:2.5, tension:.35, fill:true,
-        pointBackgroundColor:'#6366f1', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4, pointHoverRadius:6
-      },{
-        label:'Cavab sayı',
-        data: trend.length ? trend.map(t=>t.count) : [0],
-        borderColor:'#f59e0b', backgroundColor:'transparent',
-        borderWidth:2, tension:.35, borderDash:[5,4],
-        pointBackgroundColor:'#f59e0b', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3, yAxisID:'y2'
+      labels: kg.map(k=>k.name.length>16?k.name.slice(0,16)+'…':k.name),
+      datasets: [{ 
+        label: SCORE_LBL[scoreKey],
+        data: kg.map(k=>k[SCORE_MAP[scoreKey]]||0),
+        backgroundColor: COLORS[scoreKey],
+        borderRadius:5, borderSkipped:false, maxBarThickness:28
       }]
     },
     options:{
+      indexAxis: kg.length>15 ? 'y' : 'x',
       responsive:true, maintainAspectRatio:false,
       scales:{
-        y:{ min:1, max:3, position:'left', grid:{color:'#eef0fa'}, ticks:{stepSize:.5}, border:{display:false} },
-        y2:{ position:'right', grid:{display:false}, ticks:{color:'#f59e0b'}, border:{display:false} },
-        x:{grid:{display:false}, border:{display:false}}
+        x:{ min:0, max:3, grid:{color:'#eef0fa'}, border:{display:false}, ticks:{stepSize:.5} },
+        y:{ grid:{display:false}, border:{display:false}, ticks:{font:{size:10}} }
       },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:14} } }
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.x??ctx.parsed.y} / 3` } } }
     }
   });
-
-  renderRegionChart();
+  // Chart canvas yüksəkliyini bağça sayına görə tənzimlə
+  bCtx.canvas.parentElement.style.minHeight = kg.length > 15 ? `${kg.length*28+60}px` : '280px';
 }
 
-// ─── REGION CHART ────────────────────────────────────
-let regionChart;
-function renderRegionChart() {
-  const el = document.getElementById('chart-region');
-  if (!el) return;
-  const byRegion = {};
-  dash.kindergartens.forEach(k=>{
-    if (!k.participant_count) return;
-    if (!byRegion[k.region]) byRegion[k.region] = { sum:0, n:0, parts:0 };
-    byRegion[k.region].sum += k.overall_avg;
-    byRegion[k.region].n += 1;
-    byRegion[k.region].parts += k.participant_count;
-  });
-  const regions = Object.keys(byRegion).sort();
-  const avgs = regions.map(r => Math.round(byRegion[r].sum/byRegion[r].n*100)/100);
-  const parts = regions.map(r => byRegion[r].parts);
+// ─── TREND CHART (rayon filterli) ────────────────────
+let trendChart;
+function renderTrendChart() {
+  const reg = (document.getElementById('trend-region-filter')||{}).value || '';
+  const tCtx = document.getElementById('chart-trend').getContext('2d');
+  if (trendChart) trendChart.destroy();
 
-  if (regionChart) regionChart.destroy();
-  regionChart = new Chart(el.getContext('2d'), {
-    type:'bar',
-    data:{
-      labels:regions,
-      datasets:[
-        { label:'Ortalama bal', data:avgs, backgroundColor:'#6366f1', yAxisID:'y', borderRadius:7, borderSkipped:false, maxBarThickness:34 },
-        { label:'İştirakçı sayı', data:parts, backgroundColor:'#c4b5fd', yAxisID:'y2', borderRadius:7, borderSkipped:false, maxBarThickness:34 }
-      ]
-    },
+  // Əgər rayon seçilibsə — həmin rayonun bağçalarının rəylərindən trend qur
+  // (trend massivi ümumi olduğu üçün, rayon filtri üçün kindergartens-dən hesabla)
+  let datasets = [];
+  let labels = [];
+
+  if (!reg) {
+    // Ümumi trend
+    const trend = dash.trend || [];
+    labels = trend.map(t=>t.day.slice(5));
+    datasets = [{
+      label:'Ümumi ortalama',
+      data: trend.map(t=>t.avg_score),
+      borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.12)',
+      borderWidth:2.5, tension:.35, fill:true,
+      pointBackgroundColor:'#6366f1', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4
+    },{
+      label:'Cavab sayı',
+      data: trend.map(t=>t.count),
+      borderColor:'#f59e0b', backgroundColor:'transparent',
+      borderWidth:2, tension:.35, borderDash:[5,4],
+      pointBackgroundColor:'#f59e0b', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3,
+      yAxisID:'y2'
+    }];
+  } else {
+    // Seçilmiş rayon bağçaları (individual-dan gündəlik orta)
+    const kgsInReg = dash.kindergartens.filter(k=>k.region===reg && k.participant_count>0);
+    const colors = ['#6366f1','#8b5cf6','#14b8a6','#f59e0b','#ec4899','#0ea5e9'];
+    // Hər bağça üçün ayrı xətt (max 6)
+    kgsInReg.slice(0,6).forEach((k,i)=>{
+      if(!k.individual?.length) return;
+      const byDay = {};
+      k.individual.forEach(r=>{
+        const d=(r.submitted_at||'').slice(0,10);
+        if(!d) return;
+        if(!byDay[d]) byDay[d]=[];
+        byDay[d].push(r.overall);
+      });
+      const days = Object.keys(byDay).sort();
+      if(!days.length) return;
+      days.forEach(d=>{ if(!labels.includes(d.slice(5))) labels.push(d.slice(5)); });
+      labels.sort();
+      datasets.push({
+        label: k.name.length>18?k.name.slice(0,18)+'…':k.name,
+        data: labels.map(l=>{
+          const fd=byDay[Object.keys(byDay).find(d=>d.slice(5)===l)||''];
+          return fd ? Math.round(fd.reduce((a,b)=>a+b,0)/fd.length*100)/100 : null;
+        }),
+        borderColor:colors[i], backgroundColor:'transparent',
+        borderWidth:2, tension:.3, spanGaps:true,
+        pointBackgroundColor:colors[i], pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3
+      });
+    });
+  }
+
+  if (!datasets.length || !labels.length) {
+    tCtx.canvas.parentElement.innerHTML += '<div class="empty" style="padding:30px;text-align:center">Trend məlumatı yoxdur</div>';
+    return;
+  }
+
+  const hasY2 = datasets.some(d=>d.yAxisID==='y2');
+  trendChart = new Chart(tCtx, {
+    type:'line',
+    data:{ labels, datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       scales:{
-        y:{ min:0, max:3, position:'left', grid:{color:'#eef0fa'}, ticks:{stepSize:.5}, title:{display:true,text:'Bal',font:{weight:'600',size:11}}, border:{display:false} },
-        y2:{ position:'right', grid:{display:false}, ticks:{color:'#8b5cf6'}, title:{display:true,text:'İştirakçı',font:{weight:'600',size:11}}, border:{display:false} },
+        y:{ min:0, max:3, position:'left', grid:{color:'#eef0fa'}, ticks:{stepSize:.5}, border:{display:false} },
+        ...(hasY2?{y2:{ position:'right', grid:{display:false}, ticks:{color:'#f59e0b'}, border:{display:false} }}:{}),
         x:{grid:{display:false}, border:{display:false}}
       },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:14} } }
+      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:12} } }
     }
   });
 }
+
+// ─── REGION CHART (silindi) ──────────────────────────
 
 // ─── RANDEVULAR ──────────────────────────────────────
 function renderAppointments() {
@@ -1276,15 +1337,35 @@ function renderComments() {
   if (!dash.comments.length) {
     el.innerHTML = '<div class="empty">Hələ şərh yoxdur</div>'; return;
   }
-  el.innerHTML = dash.comments.map(c=>`
-    <div class="comment-item">
-      <div class="comment-meta">
-        <strong>${esc(c.parent)}</strong>
-        &nbsp;·&nbsp; ${esc(c.kindergarten_name)}
-        &nbsp;·&nbsp; ${(c.submitted_at||'').slice(0,10)}
+  el.innerHTML = dash.comments.map(c=>{
+    const kg = dash.kindergartens.find(k=>k.name===c.kindergarten_name);
+    const ind = kg?.individual?.find(r=>r.comment===c.comment&&r.parent===c.parent);
+    const SCOL={1:'#dc2626',2:'#d97706',3:'#16a34a'};
+    const SLBL={1:'Qeyri-kafi',2:'Qənaətbəxş',3:'Əla'};
+    const scoreHtml = ind ? `
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;min-width:90px">
+        <div style="font-weight:800;font-size:1.15rem;color:${SCOL[Math.round(ind.overall)]||'#64748b'}">${ind.overall}/3</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;text-align:center">
+          ${[['Həcm',ind.volume_rating],['Keyfiyyət',ind.quality_rating],['Dad',ind.taste_rating],['Gigiyena',ind.hygiene_rating]].map(([l,v])=>`
+            <div style="background:#f1f5f9;border-radius:5px;padding:2px 5px">
+              <div style="font-size:.6rem;color:#94a3b8;font-weight:600">${l}</div>
+              <div style="font-size:.75rem;font-weight:700;color:${SCOL[v]||'#64748b'}">${SLBL[v]||v}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : '';
+    return `
+    <div class="comment-item" style="display:flex;gap:14px;align-items:flex-start">
+      <div style="flex:1;min-width:0">
+        <div class="comment-meta">
+          <strong>${esc(c.parent)}</strong>
+          &nbsp;·&nbsp; ${esc(c.kindergarten_name)}
+          &nbsp;·&nbsp; ${(c.submitted_at||'').slice(0,10)}
+        </div>
+        <div class="comment-text">${esc(c.comment)}</div>
       </div>
-      <div class="comment-text">${esc(c.comment)}</div>
-    </div>`).join('');
+      ${scoreHtml}
+    </div>`;
+  }).join('');
 }
 
 // ─── KG MODAL ────────────────────────────────────────
