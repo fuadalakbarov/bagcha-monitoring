@@ -198,18 +198,6 @@ tbody tr:hover td{background:#eef2ff !important}
 .comment-meta{font-size:.74rem;color:#8b5cf6;margin-bottom:5px;font-weight:700}
 .comment-text{font-size:.88rem;color:var(--text);line-height:1.5}
 
-/* WHATSAPP SUPPORT BUTTON */
-.wa-support{position:fixed;right:22px;bottom:22px;z-index:300;display:flex;align-items:center;gap:10px;
-  text-decoration:none}
-.wa-support .wa-tip{background:#0f172a;color:#fff;padding:8px 12px;border-radius:10px;font-size:.78rem;
-  font-weight:600;max-width:200px;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:0;transform:translateX(8px);
-  transition:.2s;pointer-events:none}
-.wa-support:hover .wa-tip{opacity:1;transform:translateX(0)}
-.wa-support .wa-btn{width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;
-  justify-content:center;box-shadow:0 6px 18px rgba(37,211,102,.45);flex-shrink:0;transition:.15s}
-.wa-support .wa-btn:hover{transform:scale(1.06);box-shadow:0 8px 22px rgba(37,211,102,.55)}
-.wa-support .wa-btn svg{width:30px;height:30px;fill:#fff}
-@media(max-width:600px){.wa-support{right:14px;bottom:14px}.wa-support .wa-tip{display:none}}
 
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;
@@ -377,9 +365,10 @@ tbody tr:hover td{background:#eef2ff !important}
   #chart-bar-wrap, #chart-bar-scroll, #chart-trend,
   .chart-card, .chart-wrap { display:none!important; }
 
-  /* Aktiv olmayan tablar gizlənir */
-  .tab-pane:not(.active) { display:none!important; }
-  .tab-pane.active { display:block!important; }
+  /* Yalnız çap edilən tab görünsün */
+  .tab-pane { display:none!important; }
+  body[data-print="overview"] #tab-overview { display:block!important; }
+  body[data-print="comments"] #tab-comments { display:block!important; }
 
   /* Layout düzəldilir */
   .layout { display:block!important; }
@@ -1681,7 +1670,8 @@ function exportOverviewPDF() {
   document.getElementById('print-overview-title').textContent =
     `Gəncə-Daşkəsən Regional Təhsil İdarəsi — Bağçalarda Qidalanma Monitorinqi — ${date}`;
   showTab('overview');
-  setTimeout(() => window.print(), 300);
+  document.body.setAttribute('data-print', 'overview');
+  setTimeout(() => { window.print(); setTimeout(() => document.body.removeAttribute('data-print'), 500); }, 300);
 }
 
 // ─── COMMENTS PDF ────────────────────────────────────
@@ -1690,7 +1680,8 @@ function exportCommentsPDF() {
   document.getElementById('print-comments-title').textContent =
     `Valideyn Şərhləri — Gəncə-Daşkəsən Regional Təhsil İdarəsi — ${date}`;
   showTab('comments');
-  setTimeout(() => window.print(), 300);
+  document.body.setAttribute('data-print', 'comments');
+  setTimeout(() => { window.print(); setTimeout(() => document.body.removeAttribute('data-print'), 500); }, 300);
 }
 
 // ─── COMMENTS EXCEL ──────────────────────────────────
@@ -1885,14 +1876,6 @@ if (window.innerWidth > 860 && localStorage.getItem('sb_collapsed') === '1') {
 refreshAll();
 setInterval(refreshAll, 60000);
 </script>
-<!-- WHATSAPP DƏSTƏK DÜYMƏSİ -->
-<a class="wa-support" href="https://wa.me/994557844877" target="_blank" rel="noopener" title="Texniki dəstək — WhatsApp">
-  <span class="wa-tip">Texniki çətinlik olarsa, Fuad Ələkbərovla WhatsApp üzərindən əlaqə saxlayın</span>
-  <span class="wa-btn">
-    <svg viewBox="0 0 32 32"><path d="M16.001 3C9.107 3 3.5 8.607 3.5 15.5c0 2.49.728 4.8 1.98 6.75L4 29l6.92-1.815A12.43 12.43 0 0 0 16 28c6.894 0 12.5-5.607 12.5-12.5S22.894 3 16.001 3zm0 22.7a10.16 10.16 0 0 1-5.18-1.42l-.372-.222-4.108 1.077 1.096-4.005-.243-.41a10.13 10.13 0 0 1-1.494-5.22c0-5.626 4.578-10.2 10.301-10.2 5.625 0 10.2 4.575 10.2 10.2.001 5.626-4.577 10.2-10.2 10.2zm5.598-7.642c-.307-.154-1.817-.897-2.099-1-.282-.103-.487-.154-.692.154-.205.308-.794 1-.973 1.205-.179.205-.358.231-.665.077-.307-.154-1.296-.477-2.469-1.523-.913-.814-1.529-1.82-1.708-2.128-.179-.308-.019-.474.135-.628.139-.139.307-.36.461-.539.154-.18.205-.308.307-.513.103-.205.051-.385-.026-.539-.077-.154-.692-1.667-.948-2.283-.25-.6-.504-.519-.692-.529-.179-.009-.384-.011-.589-.011-.205 0-.539.077-.82.385-.282.308-1.077 1.052-1.077 2.565s1.103 2.975 1.257 3.18c.154.205 2.171 3.313 5.262 4.646.735.317 1.309.507 1.756.649.738.235 1.41.202 1.941.123.592-.088 1.817-.743 2.073-1.461.256-.718.256-1.333.179-1.461-.077-.128-.282-.205-.589-.36z"/></svg>
-  </span>
-</a>
-
 <!-- MODAL: Bağça fərdi cavablar -->
 <div class="modal-overlay" id="kg-detail-modal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" style="max-width:720px;width:95%;max-height:85vh;overflow-y:auto">
