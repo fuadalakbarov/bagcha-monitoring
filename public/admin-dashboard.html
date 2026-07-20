@@ -470,7 +470,7 @@ tbody tr:hover td{background:#eef2ff !important}
           </div>
         </div>
         <p class="chart-sub" id="chart-bar-subtitle" style="padding:0 18px">Rayon seçin → həmin rayonun bağçaları göstəriləcək. Rayon seçilmədikdə rayonlar müqayisəsi görünür.</p>
-        <div id="chart-bar-scroll" style="max-height:420px;overflow-y:auto;scroll-behavior:smooth;padding:4px 18px 18px">
+        <div id="chart-bar-scroll" style="overflow-y:auto;scroll-behavior:smooth;padding:4px 18px 18px">
           <div id="chart-bar-wrap" class="chart-wrap" style="min-height:280px"><canvas id="chart-bar"></canvas></div>
         </div>
       </div>
@@ -1059,6 +1059,9 @@ function renderBarChart() {
     }
     subtitle.textContent = `Bütün rayonlar — ${SCORE_LBL[scoreKey]} üzrə müqayisə. Rayon seçin → bağçalar görsənsin.`;
     wrap.style.minHeight = '280px';
+    wrap.style.height = 'auto';
+    scrollEl.style.height = 'auto';
+    scrollEl.style.overflowY = 'hidden';
 
     barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
       type:'bar',
@@ -1096,7 +1099,13 @@ function renderBarChart() {
   }
   subtitle.textContent = `${reg} · ${kg.length} bağça · ${SCORE_LBL[scoreKey]} üzrə (yüksəkdən aşağıya)`;
   scrollEl.scrollTop = 0;
-  wrap.style.minHeight = Math.max(kg.length*36+40, 240)+'px';
+
+  // Canvas hündürlüyü: hər bağça 36px, max 420px-ə kilidlə → scroll aktiv olur
+  const totalH = Math.max(kg.length * 36 + 60, 240);
+  const maxH   = 420;
+  wrap.style.height = totalH + 'px';
+  scrollEl.style.height = Math.min(totalH, maxH) + 'px';
+  scrollEl.style.overflowY = totalH > maxH ? 'auto' : 'hidden';
 
   barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
     type:'bar',
