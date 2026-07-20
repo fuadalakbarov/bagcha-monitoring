@@ -477,7 +477,7 @@ tbody tr:hover td{background:#eef2ff !important}
             </select>
           </div>
         </div>
-        <p class="chart-sub" style="padding:0 18px">Seçilmiş rayon/ümumi üzrə gündəlik ortalama bal dəyişimi</p>
+        <p class="chart-sub" id="chart-trend-subtitle" style="padding:0 18px">Bütün bağçalar üzrə gündəlik ortalama bal. Rayon seçin → bağçalar ayrı-ayrı müqayisə edilsin.</p>
         <div class="chart-wrap" style="padding:4px 18px 18px;height:260px"><canvas id="chart-trend"></canvas></div>
       </div>
 
@@ -1013,17 +1013,26 @@ function renderCharts() {
 // ─── BAR CHART (filterli) ─────────────────────────────
 let barChart;
 function renderBarChart() {
-  const reg = (document.getElementById('chart-region-filter')||{}).value || '';
+  const reg      = (document.getElementById('chart-region-filter')||{}).value || '';
   const scoreKey = (document.getElementById('chart-score-filter')||{}).value || 'overall';
+
   const SCORE_MAP = { overall:'overall_avg', volume:'avg_volume', quality:'avg_quality', taste:'avg_taste', hygiene:'avg_hygiene' };
   const SCORE_LBL = { overall:'Ümumi bal', volume:'Həcm', quality:'Keyfiyyət', taste:'Dad', hygiene:'Gigiyena' };
-  const COLORS = { overall:'#6366f1', volume:'#6366f1', quality:'#8b5cf6', taste:'#f59e0b', hygiene:'#14b8a6' };
 
-  const wrap = document.getElementById('chart-bar-wrap');
-  const canvas = document.getElementById('chart-bar');
+  // Hər metrik üçün öz rəngi
+  const METRIC_COLOR = {
+    overall:'#6366f1', volume:'#0ea5e9', quality:'#8b5cf6', taste:'#f59e0b', hygiene:'#14b8a6'
+  };
+
+  // Hər rayon üçün öz rəngi (region müqayisə chartında)
+  const REGION_COLORS = ['#6366f1','#14b8a6','#f59e0b','#ec4899','#0ea5e9','#8b5cf6'];
+
+  const wrap     = document.getElementById('chart-bar-wrap');
+  const subtitle = document.getElementById('chart-bar-subtitle');
   if (barChart) { barChart.destroy(); barChart = null; }
+  wrap.innerHTML = '<canvas id="chart-bar"></canvas>';
 
-  // Rayon seçilməyibsə — region müqayisəsi göstər
+  // ── Rayon seçilməyibsə: rayon müqayisəsi ──
   if (!reg) {
     const byRegion = {};
     dash.kindergartens.forEach(k=>{
@@ -1032,54 +1041,53 @@ function renderBarChart() {
       byRegion[k.region].sum += k[SCORE_MAP[scoreKey]]||0;
       byRegion[k.region].n++;
     });
-    const regions = Object.keys(byRegion).sort((a,b)=>(byRegion[b].sum/byRegion[b].n)-(byRegion[a].sum/byRegion[a].n));
-    const avgs = regions.map(r=>Math.round(byRegion[r].sum/byRegion[r].n*100)/100);
+    const regions = Object.keys(byRegion).sort((a,b)=>
+      (byRegion[b].sum/byRegion[b].n)-(byRegion[a].sum/byRegion[a].n));
+    const avgs = regions.map(r=>+(byRegion[r].sum/byRegion[r].n).toFixed(2));
 
     if (!regions.length) {
-      wrap.innerHTML = '<canvas id="chart-bar"></canvas><div class="empty" style="padding:40px;text-align:center">Məlumat yoxdur</div>';
+      wrap.innerHTML += '<div class="empty" style="padding:40px;text-align:center">Məlumat yoxdur</div>';
       return;
     }
-    wrap.innerHTML = '<canvas id="chart-bar"></canvas>';
+    subtitle.textContent = `Bütün rayonlar — ${SCORE_LBL[scoreKey]} üzrə müqayisə. Rayon seçin → bağçalar görsənsin.`;
     wrap.style.minHeight = '280px';
+
     barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
       type:'bar',
       data:{
         labels: regions,
-        datasets:[{ label: SCORE_LBL[scoreKey], data:avgs,
-          backgroundColor: regions.map((_,i)=>['#6366f1','#8b5cf6','#14b8a6','#f59e0b','#ec4899','#0ea5e9'][i%6]),
-          borderRadius:8, borderSkipped:false, maxBarThickness:48 }]
+        datasets:[{
+          label: SCORE_LBL[scoreKey],
+          data: avgs,
+          backgroundColor: regions.map((_,i)=>REGION_COLORS[i%REGION_COLORS.length]),
+          borderRadius:10, borderSkipped:false, maxBarThickness:56
+        }]
       },
       options:{
         responsive:true, maintainAspectRatio:false,
         scales:{
           y:{ min:0, max:3, grid:{color:'#eef0fa'}, border:{display:false}, ticks:{stepSize:.5} },
-          x:{ grid:{display:false}, border:{display:false} }
+          x:{ grid:{display:false}, border:{display:false}, ticks:{font:{size:12,weight:'600'}} }
         },
-        plugins:{ legend:{display:false},
-          tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.y} / 3` } } }
+        plugins:{
+          legend:{display:false},
+          tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.y} / 3` } }
+        }
       }
     });
-    // Subtitle göstər
-    document.getElementById('chart-bar-subtitle').textContent =
-      'Rayon seçin → həmin rayonun bağçaları göstəriləcək';
     return;
   }
 
-  // Rayon seçilibsə — həmin rayonun bağçaları
+  // ── Rayon seçilibsə: həmin rayonun bağçaları ──
   let kg = dash.kindergartens.filter(k=>k.participant_count>0 && k.region===reg);
   kg = kg.sort((a,b)=>(b[SCORE_MAP[scoreKey]]||0)-(a[SCORE_MAP[scoreKey]]||0));
 
   if (!kg.length) {
-    wrap.innerHTML = '<canvas id="chart-bar"></canvas><div class="empty" style="padding:40px;text-align:center">Bu rayon üçün məlumat yoxdur</div>';
+    wrap.innerHTML += '<div class="empty" style="padding:40px;text-align:center">Bu rayon üçün məlumat yoxdur</div>';
     return;
   }
-
-  document.getElementById('chart-bar-subtitle').textContent =
-    `${reg} rayonu — ${kg.length} bağça, ${SCORE_LBL[scoreKey]} üzrə`;
-
-  wrap.innerHTML = '<canvas id="chart-bar"></canvas>';
-  const h = Math.max(kg.length * 34 + 40, 240);
-  wrap.style.minHeight = h + 'px';
+  subtitle.textContent = `${reg} · ${kg.length} bağça · ${SCORE_LBL[scoreKey]} üzrə (yüksəkdən aşağıya)`;
+  wrap.style.minHeight = Math.max(kg.length*36+40, 240)+'px';
 
   barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
     type:'bar',
@@ -1088,7 +1096,13 @@ function renderBarChart() {
       datasets:[{
         label: SCORE_LBL[scoreKey],
         data: kg.map(k=>k[SCORE_MAP[scoreKey]]||0),
-        backgroundColor: COLORS[scoreKey],
+        // hər çubuq öz dəyərinə görə rənglənir: alarm=qırmızı, diqqət=narıncı, normal=yaşıl/mavi
+        backgroundColor: kg.map(k=>{
+          const v = k[SCORE_MAP[scoreKey]]||0;
+          if (!k.participant_count) return '#e2e8f0';
+          if (scoreKey==='overall') return v>=2.5?'#16a34a': v>=1.8?'#f59e0b':'#dc2626';
+          return METRIC_COLOR[scoreKey];
+        }),
         borderRadius:5, borderSkipped:false, maxBarThickness:26
       }]
     },
@@ -1097,78 +1111,99 @@ function renderBarChart() {
       responsive:true, maintainAspectRatio:false,
       scales:{
         x:{ min:0, max:3, grid:{color:'#eef0fa'}, border:{display:false}, ticks:{stepSize:.5} },
-        y:{ grid:{display:false}, border:{display:false}, ticks:{font:{size:11}, autoSkip:false} }
+        y:{ grid:{display:false}, border:{display:false},
+            ticks:{font:{size:11}, autoSkip:false} }
       },
-      plugins:{ legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.x} / 3` } } }
+      plugins:{
+        legend:{display:false},
+        tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.x} / 3` } }
+      }
     }
   });
 }
 
-// ─── TREND CHART (rayon filterli) ────────────────────
+// ─── TREND CHART ─────────────────────────────────────
 let trendChart;
 function renderTrendChart() {
-  const reg = (document.getElementById('trend-region-filter')||{}).value || '';
-  const tCtx = document.getElementById('chart-trend').getContext('2d');
-  if (trendChart) trendChart.destroy();
+  const reg  = (document.getElementById('trend-region-filter')||{}).value || '';
+  const wrap = document.getElementById('chart-trend').parentElement;
+  const sub  = document.getElementById('chart-trend-subtitle');
 
-  // Əgər rayon seçilibsə — həmin rayonun bağçalarının rəylərindən trend qur
-  // (trend massivi ümumi olduğu üçün, rayon filtri üçün kindergartens-dən hesabla)
-  let datasets = [];
-  let labels = [];
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+  // Canvas-ı yenidən yarat ki köhnə məzmun qalmasın
+  wrap.innerHTML = '<canvas id="chart-trend"></canvas>';
+  const tCtx = document.getElementById('chart-trend').getContext('2d');
+
+  const COLORS = ['#6366f1','#14b8a6','#f59e0b','#ec4899','#0ea5e9','#8b5cf6','#84cc16','#f97316'];
+
+  let datasets=[], labels=[];
 
   if (!reg) {
-    // Ümumi trend
+    // Ümumi trend — son 30 gün
     const trend = dash.trend || [];
-    labels = trend.map(t=>t.day.slice(5));
-    datasets = [{
-      label:'Ümumi ortalama',
-      data: trend.map(t=>t.avg_score),
-      borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.12)',
-      borderWidth:2.5, tension:.35, fill:true,
-      pointBackgroundColor:'#6366f1', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4
-    },{
-      label:'Cavab sayı',
-      data: trend.map(t=>t.count),
-      borderColor:'#f59e0b', backgroundColor:'transparent',
-      borderWidth:2, tension:.35, borderDash:[5,4],
-      pointBackgroundColor:'#f59e0b', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3,
-      yAxisID:'y2'
-    }];
+    if (!trend.length) {
+      wrap.innerHTML += '<div class="empty" style="padding:30px;text-align:center">Trend məlumatı yoxdur</div>';
+      if (sub) sub.textContent = '';
+      return;
+    }
+    labels   = trend.map(t=>t.day.slice(5));
+    datasets = [
+      {
+        label:'Ortalama bal',
+        data: trend.map(t=>t.avg_score),
+        borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.12)',
+        borderWidth:2.5, tension:.35, fill:true,
+        pointBackgroundColor:'#6366f1', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5
+      },
+      {
+        label:'Cavab sayı',
+        data: trend.map(t=>t.count),
+        borderColor:'#f59e0b', backgroundColor:'transparent',
+        borderWidth:2, tension:.35, borderDash:[5,4],
+        pointBackgroundColor:'#f59e0b', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3,
+        yAxisID:'y2'
+      }
+    ];
+    if (sub) sub.textContent = 'Bütün bağçalar üzrə gündəlik ortalama bal. Rayon seçin → bağçalar ayrı-ayrı müqayisə edilsin.';
   } else {
-    // Seçilmiş rayon bağçaları (individual-dan gündəlik orta)
-    const kgsInReg = dash.kindergartens.filter(k=>k.region===reg && k.participant_count>0);
-    const colors = ['#6366f1','#8b5cf6','#14b8a6','#f59e0b','#ec4899','#0ea5e9'];
-    // Hər bağça üçün ayrı xətt (max 6)
-    kgsInReg.slice(0,6).forEach((k,i)=>{
-      if(!k.individual?.length) return;
-      const byDay = {};
+    // Rayon seçilibsə: hər bağça ayrı xətt
+    const kgsInReg = dash.kindergartens.filter(k=>k.region===reg && k.individual?.length>0);
+
+    // Bütün tarixləri topla
+    const allDays = new Set();
+    kgsInReg.forEach(k=>k.individual.forEach(r=>{
+      const d=(r.submitted_at||'').slice(0,10);
+      if(d) allDays.add(d);
+    }));
+    labels = [...allDays].sort().map(d=>d.slice(5));
+
+    kgsInReg.slice(0,8).forEach((k,i)=>{
+      const byDay={};
       k.individual.forEach(r=>{
         const d=(r.submitted_at||'').slice(0,10);
         if(!d) return;
         if(!byDay[d]) byDay[d]=[];
         byDay[d].push(r.overall);
       });
-      const days = Object.keys(byDay).sort();
-      if(!days.length) return;
-      days.forEach(d=>{ if(!labels.includes(d.slice(5))) labels.push(d.slice(5)); });
-      labels.sort();
+      const color = COLORS[i%COLORS.length];
       datasets.push({
-        label: k.name.length>18?k.name.slice(0,18)+'…':k.name,
+        label: k.name,   // tam ad
         data: labels.map(l=>{
-          const fd=byDay[Object.keys(byDay).find(d=>d.slice(5)===l)||''];
-          return fd ? Math.round(fd.reduce((a,b)=>a+b,0)/fd.length*100)/100 : null;
+          const fullD = [...allDays].find(d=>d.slice(5)===l);
+          const arr = byDay[fullD||''];
+          return arr ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : null;
         }),
-        borderColor:colors[i], backgroundColor:'transparent',
+        borderColor:color, backgroundColor:'transparent',
         borderWidth:2, tension:.3, spanGaps:true,
-        pointBackgroundColor:colors[i], pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3
+        pointBackgroundColor:color, pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:4
       });
     });
-  }
 
-  if (!datasets.length || !labels.length) {
-    tCtx.canvas.parentElement.innerHTML += '<div class="empty" style="padding:30px;text-align:center">Trend məlumatı yoxdur</div>';
-    return;
+    if (!datasets.length) {
+      wrap.innerHTML += '<div class="empty" style="padding:30px;text-align:center">Bu rayon üçün məlumat yoxdur</div>';
+      return;
+    }
+    if (sub) sub.textContent = `${reg} · ${kgsInReg.length} bağça müqayisəsi — hər xətt bir bağçanı göstərir`;
   }
 
   const hasY2 = datasets.some(d=>d.yAxisID==='y2');
@@ -1179,10 +1214,27 @@ function renderTrendChart() {
       responsive:true, maintainAspectRatio:false,
       scales:{
         y:{ min:0, max:3, position:'left', grid:{color:'#eef0fa'}, ticks:{stepSize:.5}, border:{display:false} },
-        ...(hasY2?{y2:{ position:'right', grid:{display:false}, ticks:{color:'#f59e0b'}, border:{display:false} }}:{}),
-        x:{grid:{display:false}, border:{display:false}}
+        ...(hasY2?{y2:{position:'right',grid:{display:false},ticks:{color:'#f59e0b'},border:{display:false}}}:{}),
+        x:{ grid:{display:false}, border:{display:false} }
       },
-      plugins:{ legend:{position:'bottom', labels:{font:{size:11,weight:'600'},boxWidth:8,usePointStyle:true,pointStyle:'circle',padding:12} } }
+      plugins:{
+        legend:{
+          position:'bottom',
+          labels:{font:{size:11,weight:'600'}, boxWidth:10, usePointStyle:true,
+                  pointStyle:'circle', padding:14,
+                  // Uzun adları kəsmə — tooltip-də tam görünür
+                  generateLabels: chart => Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l=>({
+                    ...l, text: l.text.length>24 ? l.text.slice(0,24)+'…' : l.text
+                  }))
+          }
+        },
+        tooltip:{
+          callbacks:{
+            title: items => items[0].label,
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y ?? '—'} / 3`
+          }
+        }
+      }
     }
   });
 }
