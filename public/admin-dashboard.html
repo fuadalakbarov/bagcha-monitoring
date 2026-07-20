@@ -464,8 +464,8 @@ tbody tr:hover td{background:#eef2ff !important}
             </select>
           </div>
         </div>
-        <p class="chart-sub" style="padding:0 18px">Hər bağçanın seçilmiş göstərici üzrə müqayisəsi (0–3 şkala)</p>
-        <div class="chart-wrap" style="padding:4px 18px 18px;min-height:280px"><canvas id="chart-bar"></canvas></div>
+        <p class="chart-sub" id="chart-bar-subtitle" style="padding:0 18px">Rayon seçin → həmin rayonun bağçaları göstəriləcək. Rayon seçilmədikdə rayonlar müqayisəsi görünür.</p>
+        <div id="chart-bar-wrap" class="chart-wrap" style="padding:4px 18px 18px;min-height:280px"><canvas id="chart-bar"></canvas></div>
       </div>
 
       <div class="card" style="margin-bottom:20px">
@@ -1017,44 +1017,92 @@ function renderBarChart() {
   const scoreKey = (document.getElementById('chart-score-filter')||{}).value || 'overall';
   const SCORE_MAP = { overall:'overall_avg', volume:'avg_volume', quality:'avg_quality', taste:'avg_taste', hygiene:'avg_hygiene' };
   const SCORE_LBL = { overall:'Ümumi bal', volume:'Həcm', quality:'Keyfiyyət', taste:'Dad', hygiene:'Gigiyena' };
+  const COLORS = { overall:'#6366f1', volume:'#6366f1', quality:'#8b5cf6', taste:'#f59e0b', hygiene:'#14b8a6' };
 
-  let kg = dash.kindergartens.filter(k=>k.participant_count>0);
-  if (reg) kg = kg.filter(k=>k.region===reg);
-  kg = kg.sort((a,b)=>(b[SCORE_MAP[scoreKey]]||0)-(a[SCORE_MAP[scoreKey]]||0));
+  const wrap = document.getElementById('chart-bar-wrap');
+  const canvas = document.getElementById('chart-bar');
+  if (barChart) { barChart.destroy(); barChart = null; }
 
-  const bCtx = document.getElementById('chart-bar').getContext('2d');
-  if (barChart) barChart.destroy();
+  // Rayon seçilməyibsə — region müqayisəsi göstər
+  if (!reg) {
+    const byRegion = {};
+    dash.kindergartens.forEach(k=>{
+      if (!k.participant_count) return;
+      if (!byRegion[k.region]) byRegion[k.region] = { sum:0, n:0 };
+      byRegion[k.region].sum += k[SCORE_MAP[scoreKey]]||0;
+      byRegion[k.region].n++;
+    });
+    const regions = Object.keys(byRegion).sort((a,b)=>(byRegion[b].sum/byRegion[b].n)-(byRegion[a].sum/byRegion[a].n));
+    const avgs = regions.map(r=>Math.round(byRegion[r].sum/byRegion[r].n*100)/100);
 
-  if (!kg.length) {
-    bCtx.canvas.parentElement.innerHTML = '<div class="empty" style="padding:40px;text-align:center">Bu rayon üçün məlumat yoxdur</div>';
+    if (!regions.length) {
+      wrap.innerHTML = '<canvas id="chart-bar"></canvas><div class="empty" style="padding:40px;text-align:center">Məlumat yoxdur</div>';
+      return;
+    }
+    wrap.innerHTML = '<canvas id="chart-bar"></canvas>';
+    wrap.style.minHeight = '280px';
+    barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: regions,
+        datasets:[{ label: SCORE_LBL[scoreKey], data:avgs,
+          backgroundColor: regions.map((_,i)=>['#6366f1','#8b5cf6','#14b8a6','#f59e0b','#ec4899','#0ea5e9'][i%6]),
+          borderRadius:8, borderSkipped:false, maxBarThickness:48 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        scales:{
+          y:{ min:0, max:3, grid:{color:'#eef0fa'}, border:{display:false}, ticks:{stepSize:.5} },
+          x:{ grid:{display:false}, border:{display:false} }
+        },
+        plugins:{ legend:{display:false},
+          tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.y} / 3` } } }
+      }
+    });
+    // Subtitle göstər
+    document.getElementById('chart-bar-subtitle').textContent =
+      'Rayon seçin → həmin rayonun bağçaları göstəriləcək';
     return;
   }
 
-  const COLORS = { overall:'#6366f1', volume:'#6366f1', quality:'#8b5cf6', taste:'#f59e0b', hygiene:'#14b8a6' };
-  barChart = new Chart(bCtx, {
-    type: 'bar',
-    data: {
+  // Rayon seçilibsə — həmin rayonun bağçaları
+  let kg = dash.kindergartens.filter(k=>k.participant_count>0 && k.region===reg);
+  kg = kg.sort((a,b)=>(b[SCORE_MAP[scoreKey]]||0)-(a[SCORE_MAP[scoreKey]]||0));
+
+  if (!kg.length) {
+    wrap.innerHTML = '<canvas id="chart-bar"></canvas><div class="empty" style="padding:40px;text-align:center">Bu rayon üçün məlumat yoxdur</div>';
+    return;
+  }
+
+  document.getElementById('chart-bar-subtitle').textContent =
+    `${reg} rayonu — ${kg.length} bağça, ${SCORE_LBL[scoreKey]} üzrə`;
+
+  wrap.innerHTML = '<canvas id="chart-bar"></canvas>';
+  const h = Math.max(kg.length * 34 + 40, 240);
+  wrap.style.minHeight = h + 'px';
+
+  barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
+    type:'bar',
+    data:{
       labels: kg.map(k=>k.name),
-      datasets: [{ 
+      datasets:[{
         label: SCORE_LBL[scoreKey],
         data: kg.map(k=>k[SCORE_MAP[scoreKey]]||0),
         backgroundColor: COLORS[scoreKey],
-        borderRadius:5, borderSkipped:false, maxBarThickness:28
+        borderRadius:5, borderSkipped:false, maxBarThickness:26
       }]
     },
     options:{
-      indexAxis: 'y',
+      indexAxis:'y',
       responsive:true, maintainAspectRatio:false,
       scales:{
         x:{ min:0, max:3, grid:{color:'#eef0fa'}, border:{display:false}, ticks:{stepSize:.5} },
         y:{ grid:{display:false}, border:{display:false}, ticks:{font:{size:11}, autoSkip:false} }
       },
       plugins:{ legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.x??ctx.parsed.y} / 3` } } }
+        tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.x} / 3` } } }
     }
   });
-  // Chart canvas yüksəkliyini bağça sayına görə tənzimlə
-  bCtx.canvas.parentElement.style.minHeight = `${Math.max(kg.length*32+40, 280)}px`;
 }
 
 // ─── TREND CHART (rayon filterli) ────────────────────
