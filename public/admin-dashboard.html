@@ -465,7 +465,23 @@ tbody tr:hover td{background:#eef2ff !important}
           </div>
         </div>
         <p class="chart-sub" id="chart-bar-subtitle" style="padding:0 18px">Rayon seçin → həmin rayonun bağçaları göstəriləcək. Rayon seçilmədikdə rayonlar müqayisəsi görünür.</p>
-        <div id="chart-bar-wrap" class="chart-wrap" style="padding:4px 18px 18px;min-height:280px"><canvas id="chart-bar"></canvas></div>
+        <div style="position:relative">
+          <div id="chart-bar-scroll" style="max-height:480px;overflow-y:auto;scroll-behavior:smooth;padding:4px 18px 18px">
+            <div id="chart-bar-wrap" class="chart-wrap" style="min-height:280px"><canvas id="chart-bar"></canvas></div>
+          </div>
+          <div id="chart-scroll-btns" style="display:none;position:absolute;right:24px;bottom:24px;display:flex;flex-direction:column;gap:6px;z-index:10">
+            <button onclick="document.getElementById('chart-bar-scroll').scrollBy({top:-120,behavior:'smooth'})"
+              style="width:36px;height:36px;border-radius:50%;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:1.1rem;box-shadow:0 4px 12px rgba(99,102,241,.4);display:flex;align-items:center;justify-content:center"
+              title="Yuxarı">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="m18 15-6-6-6 6"/></svg>
+            </button>
+            <button onclick="document.getElementById('chart-bar-scroll').scrollBy({top:120,behavior:'smooth'})"
+              style="width:36px;height:36px;border-radius:50%;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:1.1rem;box-shadow:0 4px 12px rgba(99,102,241,.4);display:flex;align-items:center;justify-content:center"
+              title="Aşağı">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="card" style="margin-bottom:20px">
@@ -1029,6 +1045,8 @@ function renderBarChart() {
 
   const wrap     = document.getElementById('chart-bar-wrap');
   const subtitle = document.getElementById('chart-bar-subtitle');
+  const scrollEl = document.getElementById('chart-bar-scroll');
+  const btns     = document.getElementById('chart-scroll-btns');
   if (barChart) { barChart.destroy(); barChart = null; }
   wrap.innerHTML = '<canvas id="chart-bar"></canvas>';
 
@@ -1051,6 +1069,8 @@ function renderBarChart() {
     }
     subtitle.textContent = `Bütün rayonlar — ${SCORE_LBL[scoreKey]} üzrə müqayisə. Rayon seçin → bağçalar görsənsin.`;
     wrap.style.minHeight = '280px';
+    scrollEl.style.maxHeight = '480px';
+    btns.style.display = 'none';
 
     barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
       type:'bar',
@@ -1087,6 +1107,10 @@ function renderBarChart() {
     return;
   }
   subtitle.textContent = `${reg} · ${kg.length} bağça · ${SCORE_LBL[scoreKey]} üzrə (yüksəkdən aşağıya)`;
+  const needsScroll = kg.length > 8;
+  scrollEl.style.maxHeight = needsScroll ? '480px' : 'unset';
+  btns.style.display = needsScroll ? 'flex' : 'none';
+  scrollEl.scrollTop = 0;
   wrap.style.minHeight = Math.max(kg.length*36+40, 240)+'px';
 
   barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
