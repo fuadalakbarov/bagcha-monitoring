@@ -489,7 +489,7 @@ tbody tr:hover td{background:#eef2ff !important}
           <h3>Trend Analizi</h3>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
             <select id="trend-region-filter" onchange="renderTrendChart()" style="min-width:140px">
-              <option value="">Ümumi trend</option>
+              <option value="">Rayonlar müqayisəsi</option>
             </select>
           </div>
         </div>
@@ -1163,32 +1163,60 @@ function renderTrendChart() {
   let datasets=[], labels=[];
 
   if (!reg) {
-    // Ümumi trend — son 30 gün
-    const trend = dash.trend || [];
-    if (!trend.length) {
+    // Ümumi trend — hər rayon ayrı rəngli xətt
+    const COLORS = ['#6366f1','#14b8a6','#f59e0b','#ec4899','#0ea5e9','#8b5cf6','#84cc16','#f97316'];
+
+    // Bütün tarixləri topla
+    const allDays = new Set();
+    dash.kindergartens.forEach(k=>(k.individual||[]).forEach(r=>{
+      const d=(r.submitted_at||'').slice(0,10);
+      if(d) allDays.add(d);
+    }));
+
+    if (!allDays.size) {
       wrap.innerHTML += '<div class="empty" style="padding:30px;text-align:center">Trend məlumatı yoxdur</div>';
       if (sub) sub.textContent = '';
       return;
     }
-    labels   = trend.map(t=>t.day.slice(5));
-    datasets = [
-      {
-        label:'Ortalama bal',
-        data: trend.map(t=>t.avg_score),
-        borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,.12)',
-        borderWidth:2.5, tension:.35, fill:true,
-        pointBackgroundColor:'#6366f1', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:5
-      },
-      {
-        label:'Cavab sayı',
-        data: trend.map(t=>t.count),
-        borderColor:'#f59e0b', backgroundColor:'transparent',
-        borderWidth:2, tension:.35, borderDash:[5,4],
-        pointBackgroundColor:'#f59e0b', pointBorderColor:'#fff', pointBorderWidth:2, pointRadius:3,
-        yAxisID:'y2'
-      }
-    ];
-    if (sub) sub.textContent = 'Bütün bağçalar üzrə gündəlik ortalama bal. Rayon seçin → bağçalar ayrı-ayrı müqayisə edilsin.';
+
+    labels = [...allDays].sort().map(d=>d.slice(5));
+
+    // Hər rayon üçün ayrı xətt
+    const regions = [...new Set(dash.kindergartens.map(k=>k.region).filter(Boolean))].sort();
+    regions.forEach((region, i)=>{
+      const kgsInRegion = dash.kindergartens.filter(k=>k.region===region && (k.individual||[]).length>0);
+      if (!kgsInRegion.length) return;
+
+      // Həmin rayonun bütün individual rəylərini günlərə topla
+      const byDay = {};
+      kgsInRegion.forEach(k=>(k.individual||[]).forEach(r=>{
+        const d=(r.submitted_at||'').slice(0,10);
+        if(!d) return;
+        if(!byDay[d]) byDay[d]=[];
+        byDay[d].push(r.overall);
+      }));
+
+      const color = COLORS[i%COLORS.length];
+      datasets.push({
+        label: region,
+        data: labels.map(l=>{
+          const fullD = [...allDays].find(d=>d.slice(5)===l);
+          const arr = byDay[fullD||''];
+          return arr ? +(arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(2) : null;
+        }),
+        borderColor: color,
+        backgroundColor: color.replace(')', ',.08)').replace('rgb', 'rgba'),
+        borderWidth: 2.5, tension:.35, spanGaps:true, fill:false,
+        pointBackgroundColor: color, pointBorderColor:'#fff',
+        pointBorderWidth:2, pointRadius:5, pointHoverRadius:7
+      });
+    });
+
+    if (!datasets.length) {
+      wrap.innerHTML += '<div class="empty" style="padding:30px;text-align:center">Trend məlumatı yoxdur</div>';
+      return;
+    }
+    if (sub) sub.textContent = `Bütün rayonların gündəlik ortalama bal trendi — hər xətt bir rayonu göstərir`;
   } else {
     // Rayon seçilibsə: hər bağça ayrı xətt
     const kgsInReg = dash.kindergartens.filter(k=>k.region===reg && k.individual?.length>0);
