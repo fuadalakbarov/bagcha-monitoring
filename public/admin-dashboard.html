@@ -1117,9 +1117,8 @@ function renderBarChart() {
   wrap.style.height = totalH + 'px';
   scrollEl.style.height = Math.min(totalH, maxH) + 'px';
   scrollEl.style.overflowY = totalH > maxH ? 'auto' : 'hidden';
-  // Scroll düymələri — chart uzunsa göstər
   const btns = document.getElementById('chart-scroll-btns');
-  if (btns) btns.style.display = totalH > maxH ? 'flex' : 'none';
+  if (btns) btns.style.display = 'flex';
 
   barChart = new Chart(document.getElementById('chart-bar').getContext('2d'), {
     type:'bar',
