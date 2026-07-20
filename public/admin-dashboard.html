@@ -882,10 +882,13 @@ function renderAll() {
 // ─── Filtr seçimlərini doldur ────────────────────────
 function populateFilters() {
   const regions = [...new Set(dash.kindergartens.map(k=>k.region).filter(Boolean))].sort();
-  const ovSel = document.getElementById('ov-region-filter');
-  const apSel = document.getElementById('appt-region-filter');
-  if (ovSel && ovSel.options.length<=1) regions.forEach(r=>{ovSel.add(new Option(r,r));});
-  if (apSel && apSel.options.length<=1) regions.forEach(r=>{apSel.add(new Option(r,r));});
+
+  // Bütün region filterləri
+  ['ov-region-filter','appt-region-filter','chart-region-filter','trend-region-filter'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el && el.options.length <= 1) regions.forEach(r => el.add(new Option(r,r)));
+  });
+
   const pinKgSel = document.getElementById('pins-kg-filter');
   if (pinKgSel && pinKgSel.options.length<=1) kgList.forEach(k=>{pinKgSel.add(new Option(k.name,k.id));});
 }
@@ -1031,7 +1034,7 @@ function renderBarChart() {
   barChart = new Chart(bCtx, {
     type: 'bar',
     data: {
-      labels: kg.map(k=>k.name.length>16?k.name.slice(0,16)+'…':k.name),
+      labels: kg.map(k=>k.name),
       datasets: [{ 
         label: SCORE_LBL[scoreKey],
         data: kg.map(k=>k[SCORE_MAP[scoreKey]]||0),
@@ -1040,18 +1043,18 @@ function renderBarChart() {
       }]
     },
     options:{
-      indexAxis: kg.length>15 ? 'y' : 'x',
+      indexAxis: 'y',
       responsive:true, maintainAspectRatio:false,
       scales:{
         x:{ min:0, max:3, grid:{color:'#eef0fa'}, border:{display:false}, ticks:{stepSize:.5} },
-        y:{ grid:{display:false}, border:{display:false}, ticks:{font:{size:10}} }
+        y:{ grid:{display:false}, border:{display:false}, ticks:{font:{size:11}, autoSkip:false} }
       },
       plugins:{ legend:{display:false},
         tooltip:{ callbacks:{ label: ctx=>`${ctx.parsed.x??ctx.parsed.y} / 3` } } }
     }
   });
   // Chart canvas yüksəkliyini bağça sayına görə tənzimlə
-  bCtx.canvas.parentElement.style.minHeight = kg.length > 15 ? `${kg.length*28+60}px` : '280px';
+  bCtx.canvas.parentElement.style.minHeight = `${Math.max(kg.length*32+40, 280)}px`;
 }
 
 // ─── TREND CHART (rayon filterli) ────────────────────
