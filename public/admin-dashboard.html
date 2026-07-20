@@ -357,58 +357,67 @@ tbody tr:hover td{background:#eef2ff !important}
 }
 /* ── PRINT / PDF ── */
 @media print {
-  /* Lazımsız elementlər gizlənir */
-  .sidebar, .topbar, .sec-head .right, .btn,
-  #today-card, .charts-row, #chart-region,
-  .kpi-row, .card-head select, .card-head input,
-  .modal-overlay, .video-modal-overlay, .guide-modal-overlay,
-  #chart-bar-wrap, #chart-bar-scroll, #chart-trend,
-  .chart-card, .chart-wrap { display:none!important; }
+  /* Hər şeyi gizlət */
+  * { box-sizing:border-box; }
+  body { background:#fff!important; color:#000!important;
+    font-size:9pt!important; font-family:Arial,sans-serif!important;
+    -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
 
-  /* Yalnız çap edilən tab görünsün */
+  /* Layout — sidebar, topbar, düymələr yox */
+  .sidebar, .topbar, .sb-nav, .sb-footer, .sb-brand,
+  .sec-head .right, .sec-head .left,
+  .btn, .card-head select, .card-head input, .card-head div,
+  .kpi-row, #today-card, #print-overview-title + *,
+  .charts-row, .chart-card, .chart-wrap,
+  #chart-bar-wrap, #chart-bar-scroll, #chart-trend,
+  #chart-region, #trend-region-filter, #chart-region-filter,
+  .chart-sub, .card:has(canvas),
+  .modal-overlay, .video-modal-overlay, .guide-modal-overlay,
+  .menu-toggle, .topbar-spacer { display:none!important; }
+
+  /* Layout düzəlt */
+  .layout, .content-area { display:block!important; width:100%!important; margin:0!important; padding:0!important; }
+  main { padding:4px 8px!important; max-width:100%!important; }
+
+  /* Yalnız seçilmiş tab */
   .tab-pane { display:none!important; }
   body[data-print="overview"] #tab-overview { display:block!important; }
   body[data-print="comments"] #tab-comments { display:block!important; }
 
-  /* Layout düzəldilir */
-  .layout { display:block!important; }
-  .content-area { display:block!important; width:100%!important; }
-  main { padding:8px!important; max-width:100%!important; }
-
-  /* Rənglər */
-  body { background:#fff!important; color:#000!important;
-    font-size:9pt!important; font-family:Arial,sans-serif!important; }
-  * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+  /* Overview-də yalnız cədvəl kartı */
+  body[data-print="overview"] #tab-overview .card:not(:has(table)) { display:none!important; }
 
   /* Kart */
   .card { box-shadow:none!important; border:1px solid #ddd!important;
-    margin-bottom:8px!important; page-break-inside:avoid; padding:10px!important; }
+    margin-bottom:8px!important; page-break-inside:avoid; padding:8px 10px!important; }
   .card-head { margin-bottom:6px!important; }
-  .card-head h3 { font-size:10pt!important; }
+  .card-head h3 { font-size:10pt!important; font-weight:700!important; color:#1e1b4b!important; }
 
   /* Cədvəl */
-  table { width:100%!important; border-collapse:collapse!important; font-size:8pt!important; }
+  table { width:100%!important; border-collapse:collapse!important; font-size:7.5pt!important; }
   th { background:#4f46e5!important; color:#fff!important;
-    padding:5px 6px!important; text-align:left!important; font-size:7.5pt!important; }
-  td { border:1px solid #e2e8f0!important; padding:4px 6px!important; }
+    padding:4px 5px!important; text-align:left!important; font-size:7pt!important;
+    white-space:nowrap!important; }
+  td { border:1px solid #e2e8f0!important; padding:3px 5px!important; font-size:7.5pt!important; }
   tr:nth-child(even) td { background:#f8fafc!important; }
 
   /* Badge */
-  .badge { border:1px solid #999!important; padding:2px 6px!important; font-size:7pt!important; }
+  .badge { border:1px solid #999!important; padding:1px 5px!important;
+    font-size:6.5pt!important; border-radius:4px!important; }
 
   /* Başlıq */
   .print-title { display:block!important; font-size:12pt!important; font-weight:700!important;
-    margin-bottom:10px!important; color:#1e1b4b!important; border-bottom:2px solid #4f46e5!important;
-    padding-bottom:6px!important; }
+    margin-bottom:8px!important; color:#1e1b4b!important;
+    border-bottom:2px solid #4f46e5!important; padding-bottom:5px!important; }
 
   /* Şərhlər */
-  .comment-item { border:1px solid #e2e8f0!important; margin-bottom:6px!important;
-    page-break-inside:avoid!important; padding:8px!important; }
-  .comment-meta { font-size:7.5pt!important; color:#555!important; margin-bottom:3px!important; }
-  .comment-text { font-size:8.5pt!important; }
+  .comment-item { border:1px solid #e2e8f0!important; margin-bottom:5px!important;
+    page-break-inside:avoid!important; padding:6px 8px!important; }
+  .comment-meta { font-size:7pt!important; color:#555!important; margin-bottom:2px!important; }
+  .comment-text { font-size:8pt!important; }
 
-  /* Səhifə parametrləri */
-  @page { margin:1.2cm; size:A4 landscape; }
+  /* Səhifə */
+  @page { margin:1cm; size:A4 landscape; }
 }
 .print-title { display:none; }
 #chart-bar-scroll{scrollbar-width:thin;scrollbar-color:#a5b4fc #f1f5f9}
@@ -1670,8 +1679,24 @@ function exportOverviewPDF() {
   document.getElementById('print-overview-title').textContent =
     `Gəncə-Daşkəsən Regional Təhsil İdarəsi — Bağçalarda Qidalanma Monitorinqi — ${date}`;
   showTab('overview');
+
+  // Yalnız cədvəli olan kartı saxla, qalanı gizlət
+  const toHide = [];
+  document.querySelectorAll('#tab-overview > *').forEach(el => {
+    if (!el.querySelector('table')) {
+      el.style.display = 'none';
+      toHide.push(el);
+    }
+  });
+
   document.body.setAttribute('data-print', 'overview');
-  setTimeout(() => { window.print(); setTimeout(() => document.body.removeAttribute('data-print'), 500); }, 300);
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => {
+      document.body.removeAttribute('data-print');
+      toHide.forEach(el => el.style.display = '');
+    }, 500);
+  }, 300);
 }
 
 // ─── COMMENTS PDF ────────────────────────────────────
